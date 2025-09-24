@@ -1,0 +1,884 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Filters Card -->
+  <div class="card mb-4" id="filtersCard">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Filter Stories</h5>
+          <button class="btn btn-sm btn-outline-primary" type="button" id="toggleSavedStories">
+              <i class="fas fa-bookmark"></i> View Saved Stories
+          </button>
+      </div>
+      <div class="card-body">
+          <form method="get" class="row g-3" id="filterForm">
+              <div class="col-md-3">
+                  <label for="searchInput" class="form-label">Search</label>
+                  <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" id="searchInput" name="search" class="form-control" placeholder="Search titles, content or tags..."
+                             value="{{ request.args.get('search', '') }}">
+                  </div>
+              </div>
+              <div class="col-md-2">
+                  <label for="categorySelect" class="form-label">Category</label>
+                  <select id="categorySelect" name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                      <option value="{{ cat.id }}" 
+                        {% if request.args.get('category') == cat.id|string %}selected{% endif %}>
+                        {{ cat.name }}
+                      </option>
+                    {% endfor %}
+                  </select>
+              </div>
+              <div class="col-md-2">
+                  <label for="statusSelect" class="form-label">Status</label>
+                  <select id="statusSelect" name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="published" {% if request.args.get('status') == 'published' %}selected{% endif %}>Published</option>
+                    <option value="draft" {% if request.args.get('status') == 'draft' %}selected{% endif %}>Draft</option>
+                  </select>
+              </div>
+              <div class="col-md-2">
+                  <label for="sortSelect" class="form-label">Sort By</label>
+                  <select id="sortSelect" name="sort" class="form-select">
+                      <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest</option>
+                      <option value="most_viewed" {% if request.args.get('sort') == 'most_viewed' %}selected{% endif %}>Most Viewed</option>
+                      <option value="most_liked" {% if request.args.get('sort') == 'most_liked' %}selected{% endif %}>Most Liked</option>
+                  </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100 me-2">Apply</button>
+                  <button type="button" class="btn btn-outline-secondary" id="clearFilters">Clear</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- Saved Stories Section (Initially Hidden) -->
+  <div class="card mb-4 d-none" id="savedStoriesSection">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="fas fa-bookmark text-primary me-2"></i> Saved Stories</h5>
+          <button class="btn btn-sm btn-outline-secondary" type="button" id="closeSavedStories">
+              <i class="fas fa-times"></i> Close
+          </button>
+      </div>
+      <div class="card-body">
+          <div class="row" id="savedStoriesGrid">
+              <!-- Saved stories will be loaded here dynamically -->
+              <div class="col-12 text-center py-4">
+                  <div class="no-saved-stories">
+                      <i class="fas fa-bookmark fa-3x mb-3 text-muted"></i>
+                      <h5 class="text-muted">No saved stories yet</h5>
+                      <p class="text-muted">Click the bookmark icon on any story to save it for later</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- All Stories Grid -->
+  <div class="row" id="storiesGridView">
+    {% for story in stories %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4 story-item" 
+         data-status="{{ story.status }}" 
+         data-category="{{ story.category_id }}"
+         data-title="{{ story.title|lower }}"
+         data-content="{{ story.content|lower }}"
+         data-author="{{ story.author_name|lower }}"
+         data-tags="{{ story.tags|join(',')|lower if story.tags else '' }}"
+         data-views="{{ story.views }}"
+         data-likes="{{ story.likes }}"
+         data-created="{{ story.created_at.timestamp() if story.created_at else 0 }}">
+      <div class="card story-card h-100 border-0 shadow-sm hover-shadow">
+        <!-- Image with consistent sizing -->
+        <div class="story-image-container position-relative overflow-hidden">
+          <img src="{{ url_for('static', filename=story.featured_image) }}" class="story-image w-100 h-100 object-fit-cover" alt="{{ story.title }}">
+          <div class="card-header-overlay position-absolute top-0 start-0 w-100 d-flex justify-content-between align-items-center p-3">
+            <span class="badge {% if story.status == 'published' %}bg-success{% elif story.status == 'draft' %}bg-warning{% else %}bg-info{% endif %}">
+                {{ story.status|title }}
+            </span>
+            <button class="btn btn-icon save-story-btn bg-white" data-id="{{ story.id }}" title="Save for later">
+              <i class="far fa-bookmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title text-truncate" 
+                        style="color:rgb(122, 80, 2);
+                            font-weight:bold;
+                            letter-spacing:1px;
+                            text-transform:uppercase;">
+                    {{ story.title }}
+                    </h5>
+          <p class="card-text small story-excerpt flex-grow-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{ story.content }}</p>
+
+          <div class="mb-2">
+            <span class="badge bg-primary category-badge">{{ story.category or "Uncategorized" }}</span>
+            {% if story.tags %}
+              {% for tag in story.tags %}
+                <span class="badge bg-secondary tag-badge">{{ tag }}</span>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+          <div class="d-flex align-items-center mt-auto pt-2 author-info">
+            {% if story.author_profile_pic %}
+              <img src="{{ url_for('static', filename='uploads/' ~ story.author_profile_pic) }}" class="profile-img rounded-circle me-2" alt="{{ story.author_name }}" width="30" height="30">
+            {% else %}
+              <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center me-2 bg-light" style="width: 30px; height: 30px;">
+                <i class="fas fa-user text-muted small"></i>
+              </div>
+            {% endif %}
+            <p class="mb-0 small text-muted"><i class="fas fa-user me-1"></i> {{ story.author_name }}</p>
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent pt-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted"><i class="far fa-calendar me-1"></i>{{ story.created_at.strftime('%b %d, %Y') }}</small>
+
+            <div class="btn-group story-actions" role="group" aria-label="story actions">
+              <!-- ✅ changed here -->
+              <a href="{{ url_for('reader.views_story', story_id=story.id) }}" class="btn btn-sm btn-outline-primary read-btn">
+                <i class="fas fa-book-open me-1"></i>Read
+              </a>
+
+              <button class="btn btn-sm btn-outline-danger like-btn" data-id="{{ story.id }}" title="Like">
+                <i class="fas fa-heart"></i> <span class="like-count">{{ story.likes }}</span>
+              </button>
+
+              <button class="btn btn-sm btn-outline-success share-btn" data-id="{{ story.id }}" title="Share">
+                <i class="fas fa-share-alt"></i> <span class="share-count">{{ story.shares }}</span>
+              </button>
+
+              <a class="btn btn-sm btn-outline-secondary view-btn" href="#" data-id="{{ story.id }}">
+                <i class="fas fa-eye"></i> <span class="view-count">{{ story.views }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+      <div class="no-stories-placeholder">
+        <i class="fas fa-book-open fa-3x mb-3 text-muted"></i>
+        <h4 class="text-muted">No stories found</h4>
+        <p class="text-muted">Try adjusting your filters or check back later</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Stories pagination">
+      <ul class="pagination" id="paginationControls">
+        <li class="page-item disabled" id="prevPage">
+          <a class="page-link" href="#" tabindex="-1">Previous</a>
+        </li>
+        <!-- Page numbers will be added dynamically -->
+        <li class="page-item" id="nextPage">
+          <a class="page-link" href="#">Next</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* Enhanced styles for the story cards */
+.story-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.story-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Fixed: Consistent image sizing */
+.story-image-container {
+  height: 200px;
+  width: 100%;
+  flex-shrink: 0; /* Prevent image container from shrinking */
+}
+
+.object-fit-cover {
+  object-fit: cover;
+}
+
+.card-header-overlay {
+  z-index: 2;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+}
+
+.category-badge, .tag-badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+  margin: 0 2px 2px 0;
+}
+
+.author-info {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+
+.story-actions .btn {
+  border-radius: 20px;
+  padding: 0.25rem 0.5rem;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.story-actions .btn:hover {
+  transform: translateY(-2px);
+}
+
+.read-btn {
+  background-color: #4e73df;
+  color: white;
+  border: none;
+}
+
+.read-btn:hover {
+  background-color: #3a56c4;
+  color: white;
+}
+
+.no-stories-placeholder, .no-saved-stories {
+  padding: 3rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+/* Animation for interactions */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.like-btn.active {
+  animation: pulse 0.5s;
+}
+
+/* Ensure all cards have the same height */
+.story-card .card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.story-excerpt {
+  min-height: 72px; /* 3 lines of text */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .story-actions .btn span {
+    display: none;
+  }
+  
+  .story-actions .btn i {
+    margin-right: 0;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  .story-image-container {
+    height: 160px;
+  }
+}
+
+/* Pagination styles */
+.pagination {
+  margin-bottom: 0;
+}
+
+.page-item.active .page-link {
+  background-color: #4e73df;
+  border-color: #4e73df;
+  color: white;
+}
+
+.page-link {
+  color: #4e73df;
+}
+
+.page-link:hover {
+  color: #2e4a7d;
+}
+
+.page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+
+/* Toast notification styles */
+.story-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-left: 4px solid #4e73df;
+  border-radius: 4px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  min-width: 250px;
+  display: flex;
+  align-items: center;
+}
+
+.story-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.story-toast-success {
+  border-left-color: #1cc88a;
+}
+
+.story-toast-error {
+  border-left-color: #e74a3b;
+}
+
+.story-toast-warning {
+  border-left-color: #f6c23e;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+}
+
+.toast-icon {
+  margin-right: 10px;
+}
+
+.story-toast-success .toast-icon {
+  color: #1cc88a;
+}
+
+.story-toast-error .toast-icon {
+  color: #e74a3b;
+}
+
+.story-toast-warning .toast-icon {
+  color: #f6c23e;
+}
+
+/* Highlight animation for filtered items */
+.highlight {
+  animation: highlight 1.5s ease;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(78, 115, 223, 0.1); }
+  100% { background-color: transparent; }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Pagination variables
+  const storiesPerPage = 8; // Number of stories to show per page
+  let currentPage = 1;
+  let filteredStories = Array.from(document.querySelectorAll('.story-item'));
+  let totalPages = Math.ceil(filteredStories.length / storiesPerPage);
+  
+  // Initialize saved stories from localStorage
+  let savedStories = JSON.parse(localStorage.getItem('savedStories')) || [];
+  
+  // Initialize pagination
+  initPagination();
+  
+  // Update save buttons based on saved status
+  updateSaveButtons();
+  
+  // Toggle saved stories section
+  document.getElementById('toggleSavedStories').addEventListener('click', function() {
+    const savedSection = document.getElementById('savedStoriesSection');
+    const storiesGrid = document.getElementById('storiesGridView');
+    const paginationControls = document.getElementById('paginationControls');
+    
+    if (savedSection.classList.contains('d-none')) {
+      // Show saved stories
+      savedSection.classList.remove('d-none');
+      storiesGrid.classList.add('d-none');
+      paginationControls.classList.add('d-none');
+      loadSavedStories();
+    } else {
+      // Show all stories
+      savedSection.classList.add('d-none');
+      storiesGrid.classList.remove('d-none');
+      paginationControls.classList.remove('d-none');
+    }
+  });
+  
+  // Close saved stories
+  document.getElementById('closeSavedStories').addEventListener('click', function() {
+    document.getElementById('savedStoriesSection').classList.add('d-none');
+    document.getElementById('storiesGridView').classList.remove('d-none');
+    document.getElementById('paginationControls').classList.remove('d-none');
+  });
+  
+  // Clear filters
+  document.getElementById('clearFilters').addEventListener('click', function() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categorySelect').value = '';
+    document.getElementById('statusSelect').value = '';
+    document.getElementById('sortSelect').value = 'newest';
+    
+    // Reset filtered stories to all stories
+    filteredStories = Array.from(document.querySelectorAll('.story-item'));
+    totalPages = Math.ceil(filteredStories.length / storiesPerPage);
+    currentPage = 1;
+    
+    // Show all stories and update pagination
+    showPage(currentPage);
+    updatePaginationControls();
+  });
+  
+  // Filter and sort stories based on form inputs
+  document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    filterAndSortStories();
+  });
+  
+  // Initialize pagination
+  function initPagination() {
+    // Show first page initially
+    showPage(currentPage);
+    updatePaginationControls();
+    
+    // Add event listeners to pagination controls
+    document.getElementById('prevPage').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage > 1) {
+        currentPage--;
+        showPage(currentPage);
+        updatePaginationControls();
+      }
+    });
+    
+    document.getElementById('nextPage').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage < totalPages) {
+        currentPage++;
+        showPage(currentPage);
+        updatePaginationControls();
+      }
+    });
+  }
+  
+  // Show specific page of stories
+  function showPage(page) {
+    // Hide all stories first
+    document.querySelectorAll('.story-item').forEach(item => {
+      item.style.display = 'none';
+    });
+    
+    // Calculate start and end index for current page
+    const startIndex = (page - 1) * storiesPerPage;
+    const endIndex = startIndex + storiesPerPage;
+    
+    // Show stories for current page
+    filteredStories.slice(startIndex, endIndex).forEach(item => {
+      item.style.display = 'block';
+      item.classList.add('highlight');
+      setTimeout(() => item.classList.remove('highlight'), 1500);
+    });
+    
+    // Scroll to top of stories section
+    document.getElementById('storiesGridView').scrollIntoView({ behavior: 'smooth' });
+  }
+  
+  // Update pagination controls
+  function updatePaginationControls() {
+    const paginationControls = document.getElementById('paginationControls');
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    
+    // Clear existing page numbers (except prev and next)
+    const pageItems = paginationControls.querySelectorAll('.page-number');
+    pageItems.forEach(item => item.remove());
+    
+    // Add page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const pageItem = document.createElement('li');
+      pageItem.className = `page-item page-number ${i === currentPage ? 'active' : ''}`;
+      pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      
+      // Insert before next button
+      paginationControls.insertBefore(pageItem, nextPage);
+      
+      // Add click event
+      pageItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentPage = i;
+        showPage(currentPage);
+        updatePaginationControls();
+      });
+    }
+    
+    // Update prev/next button states
+    prevPage.classList.toggle('disabled', currentPage === 1);
+    nextPage.classList.toggle('disabled', currentPage === totalPages);
+    
+    // Show/hide pagination based on number of pages
+    paginationControls.style.display = totalPages <= 1 ? 'none' : 'flex';
+  }
+  
+  // Function to filter and sort stories
+  function filterAndSortStories() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const categoryFilter = document.getElementById('categorySelect').value;
+    const statusFilter = document.getElementById('statusSelect').value;
+    const sortBy = document.getElementById('sortSelect').value;
+    
+    // Get all story items
+    const storyItems = Array.from(document.querySelectorAll('.story-item'));
+    
+    // Filter stories
+    filteredStories = storyItems.filter(item => {
+      const matchesSearch = searchTerm === '' || 
+        item.dataset.title.includes(searchTerm) || 
+        item.dataset.content.includes(searchTerm) ||
+        item.dataset.author.includes(searchTerm) ||
+        item.dataset.tags.includes(searchTerm);
+      
+      const matchesCategory = categoryFilter === '' || item.dataset.category === categoryFilter;
+      const matchesStatus = statusFilter === '' || item.dataset.status === statusFilter;
+      
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+    
+    // Sort stories
+    filteredStories.sort((a, b) => {
+      if (sortBy === 'newest') {
+        return parseFloat(b.dataset.created) - parseFloat(a.dataset.created);
+      } else if (sortBy === 'most_viewed') {
+        return parseInt(b.dataset.views) - parseInt(a.dataset.views);
+      } else if (sortBy === 'most_liked') {
+        return parseInt(b.dataset.likes) - parseInt(a.dataset.likes);
+      }
+      return 0;
+    });
+    
+    // Update pagination
+    totalPages = Math.ceil(filteredStories.length / storiesPerPage);
+    currentPage = 1;
+    
+    // Show first page of filtered results
+    showPage(currentPage);
+    updatePaginationControls();
+    
+    // Show message if no stories found
+    if (filteredStories.length === 0) {
+      const noStoriesElement = document.createElement('div');
+      noStoriesElement.className = 'col-12 text-center py-5';
+      noStoriesElement.innerHTML = `
+        <div class="no-stories-placeholder">
+          <i class="fas fa-book-open fa-3x mb-3 text-muted"></i>
+          <h4 class="text-muted">No stories found</h4>
+          <p class="text-muted">Try adjusting your filters or check back later</p>
+        </div>
+      `;
+      
+      // Remove any existing no-stories message
+      const existingNoStories = document.querySelector('.no-stories-placeholder');
+      if (existingNoStories) {
+        existingNoStories.closest('.col-12').remove();
+      }
+      
+      document.getElementById('storiesGridView').appendChild(noStoriesElement);
+    } else {
+      // Remove no-stories message if it exists
+      const noStoriesElement = document.querySelector('.no-stories-placeholder');
+      if (noStoriesElement) {
+        noStoriesElement.closest('.col-12').remove();
+      }
+    }
+  }
+  
+  // Update all save buttons based on saved status
+  function updateSaveButtons() {
+    document.querySelectorAll('.save-story-btn').forEach(btn => {
+      const storyId = btn.dataset.id;
+      if (savedStories.includes(storyId)) {
+        const icon = btn.querySelector('i');
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        btn.style.color = '#4e73df';
+      } else {
+        const icon = btn.querySelector('i');
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        btn.style.color = '';
+      }
+    });
+  }
+  
+  // Load saved stories into the saved section
+  function loadSavedStories() {
+    const savedStoriesGrid = document.getElementById('savedStoriesGrid');
+    
+    if (savedStories.length === 0) {
+      savedStoriesGrid.innerHTML = `
+        <div class="col-12 text-center py-4">
+          <div class="no-saved-stories">
+            <i class="fas fa-bookmark fa-3x mb-3 text-muted"></i>
+            <h5 class="text-muted">No saved stories yet</h5>
+            <p class="text-muted">Click the bookmark icon on any story to save it for later</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    let savedHTML = '';
+    document.querySelectorAll('.story-item').forEach(item => {
+      const storyId = item.querySelector('.save-story-btn').dataset.id;
+      if (savedStories.includes(storyId)) {
+        savedHTML += item.outerHTML;
+      }
+    });
+    
+    savedStoriesGrid.innerHTML = savedHTML || `
+      <div class="col-12 text-center py-4">
+        <div class="no-saved-stories">
+          <i class="fas fa-bookmark fa-3x mb-3 text-muted"></i>
+          <h5 class="text-muted">No saved stories found</h5>
+          <p class="text-muted">Some saved stories might have been removed</p>
+        </div>
+      </div>
+    `;
+    
+    // Reattach event listeners to the saved stories
+    attachEventListenersToSavedStories();
+  }
+  
+  // Attach event listeners to saved stories
+  function attachEventListenersToSavedStories() {
+    document.querySelectorAll('#savedStoriesGrid .save-story-btn').forEach(btn => {
+      btn.addEventListener('click', handleSaveStory);
+    });
+    
+    document.querySelectorAll('#savedStoriesGrid .like-btn').forEach(btn => {
+      btn.addEventListener('click', handleLikeStory);
+    });
+    
+    document.querySelectorAll('#savedStoriesGrid .share-btn').forEach(btn => {
+      btn.addEventListener('click', handleShareStory);
+    });
+  }
+  
+  // Like functionality with enhanced UI feedback
+  function handleLikeStory(e) {
+    e.preventDefault();
+    const id = this.dataset.id;
+    
+    // Immediate UI feedback
+    this.classList.add('active');
+    const heartIcon = this.querySelector('i');
+    if (heartIcon) {
+      heartIcon.classList.remove('far');
+      heartIcon.classList.add('fas');
+    }
+    
+    fetch(`/author/story/${id}/like`, { method: 'POST', headers: {'Accept':'application/json'} })
+      .then(r => r.json()).then(json => {
+        if (json.success) {
+          const span = this.querySelector('.like-count');
+          if (span) span.innerText = parseInt(span.innerText || '0') + 1;
+          this.disabled = true;
+          
+          // Update the data attribute for sorting
+          this.closest('.story-item').dataset.likes = parseInt(this.closest('.story-item').dataset.likes) + 1;
+          
+          // Show a small notification
+          showToast('Story liked!', 'success');
+        } else {
+          // Revert UI changes if failed
+          this.classList.remove('active');
+          if (heartIcon) {
+            heartIcon.classList.remove('fas');
+            heartIcon.classList.add('far');
+          }
+          showToast(json.error || 'Could not like story', 'error');
+        }
+      }).catch(err => { 
+        console.error(err); 
+        this.classList.remove('active');
+        showToast('Error liking story', 'error');
+      });
+      
+    // Remove animation class after animation completes
+    setTimeout(() => {
+      this.classList.remove('active');
+    }, 500);
+  }
+  
+  // Share functionality
+  function handleShareStory(e) {
+    e.preventDefault();
+    const id = this.dataset.id;
+    
+    fetch(`/author/story/${id}/share`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({platform: 'other'})
+    }).then(r => r.json()).then(json => {
+      if (json.success) {
+        const span = this.querySelector('.share-count');
+        if (span) span.innerText = parseInt(span.innerText || '0') + 1;
+        showToast('Story shared!', 'success');
+      } else {
+        showToast(json.error || 'Could not share story', 'error');
+      }
+    }).catch(err => { 
+      console.error(err); 
+      showToast('Error sharing story', 'error');
+    });
+  }
+  
+  // Save story functionality
+  function handleSaveStory(e) {
+    e.preventDefault();
+    const id = this.dataset.id;
+    const icon = this.querySelector('i');
+    
+    // Check if story is already saved
+    const index = savedStories.indexOf(id);
+    
+    if (index === -1) {
+      // Save the story
+      savedStories.push(id);
+      icon.classList.remove('far');
+      icon.classList.add('fas');
+      this.style.color = '#4e73df';
+      showToast('Story saved for later', 'success');
+    } else {
+      // Remove the story from saved
+      savedStories.splice(index, 1);
+      icon.classList.remove('fas');
+      icon.classList.add('far');
+      this.style.color = '';
+      showToast('Story removed from saved', 'info');
+      
+      // If we're in the saved stories view, remove this card
+      if (this.closest('#savedStoriesGrid')) {
+        this.closest('.story-item').remove();
+        // Check if we need to show the empty state
+        if (document.querySelectorAll('#savedStoriesGrid .story-item').length === 0) {
+          loadSavedStories(); // This will show the empty state
+        }
+      }
+    }
+    
+    // Update localStorage
+    localStorage.setItem('savedStories', JSON.stringify(savedStories));
+    
+    // Update all save buttons to reflect the new state
+    updateSaveButtons();
+  }
+  
+  // Attach event listeners
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', handleLikeStory);
+  });
+  
+  document.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', handleShareStory);
+  });
+  
+  document.querySelectorAll('.save-story-btn').forEach(btn => {
+    btn.addEventListener('click', handleSaveStory);
+  });
+  
+  // View story functionality (if needed)
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // This would typically be handled by the link href
+      // But we can add analytics or other tracking here if needed
+    });
+  });
+  
+  // Helper function to show toast notifications
+  function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `story-toast story-toast-${type}`;
+    toast.innerHTML = `
+      <div class="toast-content">
+        <i class="toast-icon ${getToastIcon(type)}"></i>
+        <span>${message}</span>
+      </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+  
+  function getToastIcon(type) {
+    switch(type) {
+      case 'success': return 'fas fa-check-circle';
+      case 'error': return 'fas fa-exclamation-circle';
+      case 'warning': return 'fas fa-exclamation-triangle';
+      default: return 'fas fa-info-circle';
+    }
+  }
+});
+</script>
+{% endblock %}

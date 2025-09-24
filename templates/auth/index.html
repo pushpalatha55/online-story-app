@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEARCH A STORY</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-3d-coverflow.css') }}">
+     <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        #popup {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+            justify-content: center; /* Center horizontally */
+            align-items: center;     /* Center vertically */
+            z-index: 9999;
+        }
+
+        #popupContent {
+            background: #c29ced;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            color: black;
+        }
+
+        #popupContent img {
+            width: 50%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        #popupText
+        {
+            color:floralwhite
+        }
+
+        #closeBtn {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 22px;
+            cursor: pointer;
+            color: black;
+        }
+        
+       /*----------------SEARCH---------------------------------- */
+       .search-section {
+      text-align: center;
+      padding-top: 20px;
+    }
+    .search-title {
+      font-weight: 700;
+      font-size: 2rem;
+      color: #667eea;
+    }
+    .search-subtitle {
+      color: #555;
+      margin-bottom: 30px;
+    }
+    .search-box {
+      max-width: 700px;
+      margin: 0 auto 25px;
+      display: flex;
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .search-input {
+      flex: 1;
+      border: none;
+      padding: 15px 20px;
+      outline: none;
+    }
+    .search-btn {
+      border: none;
+      padding: 0 30px;
+      background: linear-gradient(90deg, #6a11cb, #ff4b2b);
+      color: #fff;
+      font-weight: 500;
+      border-radius: 0;
+    }
+    .tag-btn {
+      border-radius: 20px;
+      background-color: #f2f2ff;
+      color: #6a11cb;
+      font-weight: 500;
+      margin: 5px;
+      padding: 8px 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+      border: none;
+    }
+    /* ------------------CHOOSE-----------------------------  */
+    .why-card {
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    padding:40px 25px;
+    text-align:center;
+    width:300px;
+    transition:all 0.4s ease;
+  }
+  .why-card:hover {
+    transform:translateY(-10px);
+    box-shadow:0 12px 25px rgba(0,0,0,0.15);
+  }
+  .why-icon {
+    font-size:2.5rem;
+    width:70px;
+    height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    border-radius:50%;
+    margin:0 auto 20px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    transition:all 0.3s ease;
+  }
+  .why-card:hover .why-icon {
+    transform:scale(1.15) rotate(10deg);
+  }
+  .why-card h3 {
+    font-size:1.3rem;
+    font-weight:bold;
+    margin-bottom:15px;
+    color:#222;
+  }
+  .why-card p {
+    color:#555;
+    font-size:1rem;
+    line-height:1.6;
+  }
+
+   .testimonial-card {
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.08);
+    padding:30px 25px;
+    width:420px;
+    transition:all 0.4s ease;
+  }
+  .testimonial-card:hover {
+    transform:translateY(-10px);
+    box-shadow:0 12px 30px rgba(0,0,0,0.15);
+  }
+  .testimonial-text {
+    font-size:1.1rem;
+    font-style:italic;
+    color:#444;
+    line-height:1.6;
+    margin-bottom:25px;
+    position:relative;
+  }
+  .quote {
+    font-size:2rem;
+    color:#aaa;
+    font-weight:bold;
+    margin-right:6px;
+  }
+  .testimonial-user {
+    display:flex;
+    align-items:center;
+    gap:15px;
+  }
+  .testimonial-user img {
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #eee;
+  }
+  .testimonial-user h4 {
+    margin:0;
+    font-size:1.1rem;
+    font-weight:bold;
+    color:#222;
+  }
+  .testimonial-user p {
+    margin:0;
+    color:#777;
+    font-size:0.95rem;
+  }
+  
+
+  /* Footer Styling */
+.site-footer {
+  background: #2d3333;
+  color: #fff;
+  padding: 60px 40px 30px;
+  position: relative;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.footer-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 2fr; /* About | Quick Links | Resources | Newsletter */
+  gap: 40px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* About Section */
+.footer-about h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.footer-about p {
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.footer-social a {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  background: #444;
+  color: #fff;
+  border-radius: 50%;
+  margin-right: 10px;
+  transition: 0.3s;
+}
+.footer-social a:hover {
+  background: #6a11cb;
+}
+
+/* Links & Newsletter */
+.footer-links,
+.footer-newsletter {
+  display: flex;
+  flex-direction: column;  /* Heading above list/content */
+  align-items: flex-start;
+}
+
+.footer-links h3,
+.footer-newsletter h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links ul li {
+  margin-bottom: 10px;
+}
+
+.footer-links ul li a {
+  color: #bbb;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.footer-links ul li a:hover {
+  color: #fff;
+}
+
+.footer-newsletter p {
+  color: #ccc;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.footer-newsletter form {
+  display: flex;
+  border-radius: 25px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 350px;
+}
+
+.footer-newsletter input {
+  flex: 1;
+  padding: 12px 15px;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.footer-newsletter button {
+  background: #0d0630;
+  color: #fff;
+  padding: 12px 25px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+.footer-newsletter button:hover {
+  background: #6a11cb;
+}
+
+/* Bottom bar */
+.footer-bottom {
+  border-top: 1px solid #444;
+  margin-top: 30px;
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.footer-bottom a {
+  color: #aaa;
+  text-decoration: none;
+  margin-left: 10px;
+}
+.footer-bottom a:hover {
+  color: #fff;
+}
+
+/* Back to top button */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #0d0630;
+  color: #fff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 50px;
+  font-size: 20px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.back-to-top:hover {
+  background: #6a11cb;
+}
+
+
+
+    </style>
+
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <a href="#home" class="logo-container">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="10" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(-15 17.5 50)" />
+                    <rect x="35" y="15" width="15" height="70" fill="url(#grad1)" />
+                    <rect x="60" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(15 67.5 50)" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.5" />
+                </svg>
+            </div>
+            <div class="logo-text" style="font-family: 'Times New Roman', Times, serif;">STORY <font color="orange">TIME</font></div>
+        </a>
+
+        <nav class="main-menu" id="mainMenu" style="font-family: 'Times New Roman', Times, serif;">
+          <a href="{{ url_for('auth.index') }}" class="menu-item active">Home</a>
+          <a href="{{ url_for('auth.about') }}" class="menu-item">About</a>
+          <a href="{{ url_for('auth.all_stories') }}" class="menu-item">All Stories</a>
+          <a href="{{ url_for('auth.contact') }}" class="menu-item">Contact</a>
+          <div style="display:flex; gap:5px;">
+            <a class="nav-link" href="{{ url_for('auth.login') }}" 
+              style="color:black; background:white; padding:8px 20px;
+                      border-radius:6px 0 0 6px; font-weight:500;
+                      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                      transition:all 0.3s ease; text-decoration:none;">
+              Login
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.register') }}" 
+              style="color:#fff; background:blue; padding:8px 20px;
+                      border-radius:0 6px 6px 0; font-weight:500;
+                      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                      transition:all 0.3s ease; text-decoration:none;">
+              Register
+            </a>
+          </div>
+
+
+          
+        </nav>
+
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Home Section -->
+    <section id="home" class="section1">
+        <div class="coverflow-wrapper">
+            <div class="info">
+                <h2 id="current-title">Mountain Landscape</h2>
+                <p id="current-description">Majestic peaks covered in snow during golden hour</p>
+            </div>
+
+            <div class="coverflow-container" tabindex="0">
+                <div class="coverflow" id="coverflow">
+                    <div class="coverflow-item" data-index="0">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/adventure.jpg') }}" alt="Adventure" loading="lazy">
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="1">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/fiction.jpg') }}" alt="Adventure" loading="lazy">
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="2">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/horror.jpg') }}" alt="horror"
+                                loading="lazy">
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="3">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/comedy.jpg') }}" alt="comedy"
+                                loading="lazy">
+
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="4">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/non-fiction.jpg') }}" alt="comedy"
+                                loading="lazy">
+
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="5">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/romantic.jpg') }}" alt="comedy"
+                                loading="lazy">
+
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="6">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/insiration.jpg') }}" alt="inspiration"
+                                loading="lazy">
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="7">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/mystery.jpg') }}" alt="mystery"
+                                loading="lazy">
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="8">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/drama.jpg') }}" alt="drama" loading="lazy">
+
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                    <div class="coverflow-item" data-index="9">
+                        <div class="cover image-loading">
+                            <img src="{{ url_for('static', filename='images/thriller.jpg') }}" alt="thriller"
+                                loading="lazy">
+
+                        </div>
+                        <div class="reflection"></div>
+                    </div>
+                </div>
+
+                <button class="nav-button prev" onclick="navigate(-1)">‹</button>
+                <button class="nav-button next" onclick="navigate(1)">›</button>
+
+                <div class="dots-container" id="dots"></div>
+
+                <!-- Play/Pause Button -->
+                <button class="play-pause-button" id="playPauseBtn" onclick="toggleAutoplay()">
+                    <span class="play-icon">▶</span>
+                    <span class="pause-icon" style="display: none;">❚❚</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- About Section -->
+<section id="about" class="section" style="background-color: white;">
+  <div class="about-content">
+    <section class="search-section">
+      <h1 class="search-title" id="typing-text"></h1>
+      <p class="search-subtitle">Find exactly what you're looking for with our powerful search and filtering options.  
+    Whether you're in the mood for horror, comedy, adventure, or inspiration — our library makes it simple to explore and enjoy new stories every day.</p>
+      
+      <!-- Search Bar -->
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="🔍 Search for a story...">
+        <button class="search-btn">Search</button>
+      </div>
+
+      <!-- Category Tags -->
+      <div>
+        <button class="tag-btn">👻 Horror</button>
+        <button class="tag-btn">😂 Comedy</button>
+        <button class="tag-btn">🗺 Adventure</button>
+        <button class="tag-btn">🕵 Mystery</button>
+        <button class="tag-btn">🎭 Drama</button>
+        <button class="tag-btn">🔪 Thriller</button>
+        <button class="tag-btn">🌟 Inspiration</button>
+      </div>
+    </section>
+
+    <div class="about-main" style="display:flex; justify-content:center; align-items:center; width:100%;margin-bottom: 0px;">
+      <div class="about-visual" 
+           style="display:flex; justify-content:center; align-items:center; width:100%; min-height:400px;margin-bottom: 0px;">
+        <div class="showcase-display">
+          <div class="showcase-main" 
+               style="background: linear-gradient(135deg, rgb(116,118,230), rgb(180,132,255)); 
+                      width:100%; max-width:600px;  
+                      display:flex; flex-direction:column; justify-content:center; align-items:center; 
+                      border-radius:12px; text-align:center;margin-bottom: 0px;">
+            
+            <div class="corner-decoration top-left"></div>
+            <div class="corner-decoration bottom-right"></div>
+
+            <div class="showcase-logo mb-3">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                <rect x="10" y="25" width="15" height="50" fill="white"
+                      transform="rotate(-15 17.5 50)" opacity="0.9" />
+                <rect x="35" y="15" width="15" height="70" fill="white" />
+                <rect x="60" y="25" width="15" height="50" fill="white"
+                      transform="rotate(15 67.5 50)" opacity="0.9" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="2"
+                        opacity="0.3" />
+              </svg>
+            </div>
+
+            <h3 class="showcase-title" style="font-family: 'Times New Roman', Times, serif; color:white;">
+              CREATE STORY
+            </h3>
+            <p class="showcase-subtitle" style="font-family: 'Times New Roman', Times, serif; color:white;">
+              Find your next favorite story and share your imagination with the world.  
+    Whether you're writing a thrilling mystery, a heartfelt drama, or a lighthearted comedy.
+    
+            </p>
+
+            <div class="showcase-badges" style="font-family: 'Times New Roman', Times, serif;">
+              <a href="#" onclick="showContent(0,event)" class="badge">👻 - H</a>
+              <a href="#" onclick="showContent(1,event)" class="badge">😂 - C</a>
+              <a href="#" onclick="showContent(2,event)" class="badge">🗺 - A</a>
+              <a href="#" onclick="showContent(3,event)" class="badge">🕵 - M</a>
+              <a href="#" onclick="showContent(4,event)" class="badge">🎭 - D</a>
+              <a href="#" onclick="showContent(5,event)" class="badge">🔪 - T</a>
+              <a href="#" onclick="showContent(6,event)" class="badge">🌟 - I</a>
+            </div>
+
+            <!-- Popup -->
+            <div id="popup">
+              <div id="popupContent">
+                <span id="closeBtn" onclick="closePopup()">×</span>
+                <img id="popupImage" src="" alt="">
+                <h2 id="popupTitle"></h2><br>
+                <p id="popupText"></p>
+              </div>
+            </div>
+
+            <!-- JAVA SCRIPT FOR POPUPS-->
+            <script>
+              const badgeData = [
+                {
+                  title: "HORROR STORIES",
+                  image: "{{ url_for('static', filename='images/horror.jpg') }}",
+                  content: "Late at night, Maya heard faint whispers..."
+                },
+                {
+                  title: "COMEDY STORIES",
+                  image: "{{ url_for('static', filename='images/comedy.jpg') }}",
+                  content: "Ravi tried online yoga for the first time..."
+                },
+                {
+                  title: "ADVENTURE STORIES",
+                  image:"{{ url_for('static', filename='images/adventure.jpg') }}",
+                  content: "Lost in the jungle, Arav’s compass broke..."
+                },
+                {
+                  title: "MYSTERY STORIES",
+                  image: "{{ url_for('static', filename='images/mystery.jpg') }}",
+                  content: "The museum’s prized ruby vanished overnight..."
+                },
+                {
+                  title: "DRAMA STORIES",
+                  image: "{{ url_for('static', filename='images/drama.jpg') }}",
+                  content: "Every afternoon, Arjun watched his father polish shoes..."
+                },
+                {
+                  title: "THRILLER STORIES",
+                  image: "{{ url_for('static', filename='images/thriller.jpg') }}",
+                  content: "A phone buzzed at 3 AM - 'Don’t move. I see you.'..."
+                },
+                {
+                  title: "INSPIRATIONAL STORIES",
+                  image: "{{ url_for('static', filename='images/insiration.jpg') }}",
+                  content: "Priya was born without sight, but never without vision..."
+                }
+              ];
+
+              function showContent(index, event) {
+                event.preventDefault();  
+                const data = badgeData[index];
+                document.getElementById("popupImage").src = data.image;
+                document.getElementById("popupTitle").innerText = data.title;
+                document.getElementById("popupText").innerText = data.content;
+                document.getElementById("popup").style.display = "flex";
+              }
+
+              function closePopup() {
+                document.getElementById("popup").style.display = "none";
+              }
+            </script>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- -----------CHOOSE------------->
+<!-- Why Choose Section -->
+<section style="padding:10px 20px; background:#f9f9ff;margin-top: 0px;">
+  <div style="text-align:center; margin-bottom:50px;">
+    <h2 style="font-size:2.5rem; font-weight:bold; color:#222; margin-bottom:10px;">
+      Why Choose Story Time?
+    </h2>
+    <div style="width:100px; height:4px; margin:0 auto 15px; background:linear-gradient(to right, #6a11cb, #ff4b2b); border-radius:2px;"></div>
+    <p style="color:#555; font-size:1.1rem;">
+      We provide the best platform for readers and writers alike
+    </p>
+  </div>
+
+  <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap;">
+    
+    <!-- Card 1 -->
+    <div class="why-card">
+      <div class="why-icon" style="background:linear-gradient(135deg, #6a11cb, #ff4b2b);">
+        📖
+      </div>
+      <h3>Wide Selection</h3>
+      <p>Thousands of stories across all genres for every mood and preference.</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="why-card">
+      <div class="why-icon" style="background:linear-gradient(135deg, #6a11cb, #ff4b2b);">
+        ✍
+      </div>
+      <h3>Create Easily</h3>
+      <p>Intuitive tools to write and share your own stories with the world.</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="why-card">
+      <div class="why-icon" style="background:linear-gradient(135deg, #6a11cb, #ff4b2b);">
+        👥
+      </div>
+      <h3>Community</h3>
+      <p>Connect with other readers and writers who share your passions.</p>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- ------------------------------ -->
+ <!-- Testimonials Section -->
+<section style="padding:80px 20px; background:#fff;">
+  <div style="text-align:center; margin-bottom:50px;">
+    <h2 style="font-size:2.5rem; font-weight:bold; color:#222; margin-bottom:10px;">
+      What Our Readers Say
+    </h2>
+    <div style="width:100px; height:4px; margin:0 auto 15px; background:linear-gradient(to right, #6a11cb, #ff4b2b); border-radius:2px;"></div>
+    <p style="color:#555; font-size:1.1rem;">
+      Discover why thousands of readers and writers love Story Time
+    </p>
+  </div>
+
+  <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap;">
+    
+    <!-- Testimonial 1 -->
+    <div class="testimonial-card">
+      <p class="testimonial-text">
+        <span class="quote">“</span>
+        I've discovered so many amazing stories on Story Time. The search feature makes it easy to find exactly what I'm in the mood for! The community is supportive and the creators are talented.
+        <span class="quote">”</span>
+      </p>
+      <div class="testimonial-user">
+        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Sarah" />
+        <div>
+          <h4>Sarah M.</h4>
+          <p>Avid Reader</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonial 2 -->
+    <div class="testimonial-card">
+      <p class="testimonial-text">
+        <span class="quote">“</span>
+        As an aspiring writer, the create feature has been invaluable. I've published three stories and the feedback has been incredible! The platform is intuitive and the audience is engaged.
+        <span class="quote">”</span>
+      </p>
+      <div class="testimonial-user">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="James" />
+        <div>
+          <h4>James K.</h4>
+          <p>Content Creator</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+    
+
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-container">
+    
+    <!-- Left Section -->
+    <div class="footer-about">
+      <h2>STORY TIME</h2>
+      <p>Where stories come to life and imaginations soar. Join our community of storytellers and readers today.</p>
+      
+      <div class="footer-social">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="footer-links">   
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="{{ url_for('auth.index') }}">Home</a></li>
+        <li><a href="{{ url_for('auth.about') }}">About</a></li>
+        <li><a href="{{ url_for('auth.all_stories') }}">Stories</a></li>
+        <li><a href="{{ url_for('auth.contact') }}">Contact</a></li>
+      </ul>
+    </div>
+    
+    <!-- Resources -->
+    <div class="footer-links">
+      <h3>Resources</h3>
+      <ul>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Writing Tips</a></li>
+        <li><a href="#">FAQ</a></li>
+      </ul>
+    </div>
+    
+    <!-- Newsletter -->
+    <div class="footer-newsletter">
+      <h3>Newsletter</h3>
+      <p>Subscribe to get updates on new stories, features, and writing contests.</p>
+      <form>
+        <input type="email" placeholder="Your email">
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+    
+  </div>
+  
+  <!-- Bottom Bar -->
+  <div class="footer-bottom">
+    <p>© 2023 StoryCraft. All rights reserved.</p>
+    <p><a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a></p>
+  </div>
+  
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top">↑</a>
+</footer>
+
+<!-- Font Awesome (for icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+
+    <!-- Scroll to top button -->
+    <div class="scroll-to-top" id="scrollToTop">
+        <span>↑</span>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const text = "SEARCH A STORY";
+            const typingElement = document.getElementById("typing-text");
+            let index = 0;
+
+            function typeEffect() {
+            if (index < text.length) {
+                typingElement.innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeEffect, 140); // speed in ms (adjust as needed)
+            }
+            }
+
+            typeEffect();
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/templatemo-3d-coverflow-scripts.js') }}"></script>
+
+</body>
+
+</html>

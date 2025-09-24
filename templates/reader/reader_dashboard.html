@@ -1,0 +1,651 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="animate-fade-in">📖 Reader Dashboard</h2>
+            <p class="lead animate-fade-in" style="animation-delay: 0.2s;">Welcome back, {{ username }}! You're logged in as a Reader.</p>
+            <div class="alert alert-info animate-slide-in-left" style="animation-delay: 0.4s;">
+                <strong>Tip of the Day:</strong> Discover new stories by exploring different categories and authors!
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="card bg-light stats-card animate-pop-in">
+                <div class="card-body">
+                    <h6>Your Reading Status</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Stories Read:</span>
+                        <span class="fw-bold counter" data-target="{{ reader_stats.stories_read }}">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Likes Given:</span>
+                        <span class="fw-bold counter" data-target="{{ reader_stats.likes_given }}">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Comments:</span>
+                        <span class="fw-bold counter" data-target="{{ reader_stats.comments_count }}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards Section -->
+    <div class="row mb-4">
+        <!-- Reading Status Card -->
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white text-center stat-card animate-pop-in">
+                <div class="card-body">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-book-reader fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Reading Status</h5>
+                    <h3 class="fw-bold">{{ reader_stats.stories_in_progress }}</h3>
+                    <p class="card-text">Stories in Progress status <br>Likes,Comments,Read Stories</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Likes Card -->
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white text-center stat-card animate-pop-in" style="animation-delay: 0.1s;">
+                <div class="card-body">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-heart fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Likes</h5>
+                    <h3 class="fw-bold">{{ reader_stats.likes_given }}</h3>
+                    <p class="card-text">Stories You've Liked</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Card -->
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white text-center stat-card animate-pop-in" style="animation-delay: 0.2s;">
+                <div class="card-body">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-comments fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Comments</h5>
+                    <h3 class="fw-bold">{{ reader_stats.comments_count }}</h3>
+                    <p class="card-text">Comments Made</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Read Stories Card -->
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white text-center stat-card animate-pop-in" style="animation-delay: 0.3s;">
+                <div class="card-body">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Read Stories</h5>
+                    <h3 class="fw-bold">{{ reader_stats.stories_read }}</h3>
+                    <p class="card-text">Completed Stories</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reading Stats Graph -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card animate-fade-in">
+                <div class="card-header">
+                    <h5>📊 Your Reading Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="readingStatsChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="animate-fade-in">Quick Actions</h4>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="#featured-stories" class="btn btn-primary animate-pop-in" style="animation-delay: 0.1s;">
+                    <i class="fas fa-book-open me-1"></i> Browse Stories
+                </a>
+                <a href="#categories" class="btn btn-outline-primary animate-pop-in" style="animation-delay: 0.2s;">
+                    <i class="fas fa-tags me-1"></i> Explore Categories
+                </a>
+                <a href="#" class="btn btn-outline-success animate-pop-in" style="animation-delay: 0.3s;" data-bs-toggle="modal" data-bs-target="#readingTipsModal">
+                    <i class="fas fa-lightbulb me-1"></i> Reading Tips
+                </a>
+                <a href="#" class="btn btn-outline-info animate-pop-in" style="animation-delay: 0.4s;" data-bs-toggle="modal" data-bs-target="#communityGuidelinesModal">
+                    <i class="fas fa-users me-1"></i> Community Guidelines
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Stories Section -->
+    <div class="row mb-4" id="featured-stories">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="animate-fade-in">🔥 Featured Stories</h4>
+                <a href="{{ url_for('reader.browse_stories') }}" class="btn btn-sm btn-outline-secondary animate-pop-in">View All</a>
+            </div>
+            <div class="row">
+                {% for story in featured_stories %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 story-card animate-pop-in" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2">{{ story.category }}</span>
+                                <small class="text-muted"><i class="fas fa-eye me-1"></i> {{ story.views }}</small>
+                            </div>
+                            <h5 class="card-title">{{ story.title }}</h5>
+                            <p class="card-text">{{ story.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">By: {{ story.author }}</small>
+                                <div>
+                                    <span class="badge bg-light text-dark"><i class="fas fa-heart text-danger me-1"></i> <span class="like-count">{{ story.likes }}</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ url_for('reader.views_story', story_id=story.id) }}" class="btn btn-sm btn-outline-primary w-100 read-story">Read Story</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">No featured stories available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="row mb-4" id="categories">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="animate-fade-in">📚 Popular Categories</h4>
+                <a href="{{ url_for('reader.browse_stories') }}" class="btn btn-sm btn-outline-secondary animate-pop-in">View All</a>
+            </div>
+            <div class="row">
+                {% for cat in categories %}
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card category-card text-center animate-pop-in" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                        <div class="card-body">
+                            <div class="category-image-container mb-2">
+                                <img src="{{ cat.image_url or 'https://placehold.co/300x200?text=' + cat.name }}" 
+                                     alt="{{ cat.name }}" 
+                                     class="category-image img-fluid rounded"
+                                     data-category-name="{{ cat.name }}"
+                                     data-category-count="{{ cat.total }}"
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#categoryDetailModal">
+                            </div>
+                            <h5 class="card-title"><i class="fas fa-book-open"></i> {{ cat.name }}</h5>
+                            <p class="card-text">
+                                <span class="badge bg-primary">{{ cat.total }} stories</span>
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">No categories found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Detail Modal -->
+<div class="modal fade" id="categoryDetailModal" tabindex="-1" aria-labelledby="categoryDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryDetailModalLabel">Category Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="modalCategoryImage" src="" alt="Category Image" class="img-fluid rounded">
+                    </div>
+                    <div class="col-md-8">
+                        <h3 id="modalCategoryName" class="text-primary"></h3>
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="badge bg-info fs-6">
+                                <i class="fas fa-book me-1"></i>
+                                <span id="modalCategoryCount">0</span> stories
+                            </span>
+                        </div>
+                        <div class="category-message bg-light p-3 rounded">
+                            <h6>Welcome to this wonderful category!</h6>
+                            <p>We're delighted to have you explore our collection of <span id="messageCategoryCount" class="fw-bold">0</span> captivating stories in the <span id="messageCategoryName" class="fw-bold"></span> category.</p>
+                            <p>Whether you're seeking thrilling adventures, heartwarming tales, or thought-provoking narratives, you'll find a diverse range of stories crafted by talented writers from around the world.</p>
+                            <p>Each story in this category has been carefully created to transport you to different worlds, introduce you to memorable characters, and provide hours of enjoyable reading.</p>
+                            <p>We encourage you to take your time exploring, leave comments for authors you appreciate, and share your favorite discoveries with fellow readers. Your engagement helps our community thrive!</p>
+                            <p>Happy reading, and may you find many stories that capture your imagination and touch your heart!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('reader.browse_stories') }}" class="btn btn-primary">Explore Stories</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reading Tips Modal -->
+<div class="modal fade" id="readingTipsModal" tabindex="-1" aria-labelledby="readingTipsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="readingTipsModalLabel">📚 Reading Tips & Strategies</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Enhance Your Reading Experience</h6>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Set aside dedicated reading time each day</li>
+                    <li class="list-group-item">Explore different genres to discover new favorites</li>
+                    <li class="list-group-item">Use the bookmark feature to save your progress</li>
+                    <li class="list-group-item">Engage with authors by leaving comments and feedback</li>
+                    <li class="list-group-item">Create reading lists to organize stories you want to read later</li>
+                </ul>
+                <div class="mt-3">
+                    <h6>Interactive Features</h6>
+                    <p>Make the most of our platform by:</p>
+                    <ul>
+                        <li>Liking stories you enjoy to support authors</li>
+                        <li>Sharing great finds with other readers</li>
+                        <li>Following your favorite authors for updates</li>
+                        <li>Participating in community discussions</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Community Guidelines Modal -->
+<div class="modal fade" id="communityGuidelinesModal" tabindex="-1" aria-labelledby="communityGuidelinesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="communityGuidelinesModalLabel">👥 Community Guidelines</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Welcome to Our Reading Community!</h6>
+                <p>To ensure a positive experience for everyone, please follow these guidelines:</p>
+                
+                <div class="mb-3">
+                    <h6>Respectful Engagement</h6>
+                    <ul>
+                        <li>Provide constructive feedback to authors</li>
+                        <li>Be respectful in comments and discussions</li>
+                        <li>Appreciate the effort writers put into their work</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Content Interaction</h6>
+                    <ul>
+                        <li>Liking stories you genuinely enjoy</li>
+                        <li>Sharing stories with proper attribution</li>
+                        <li>Report any content that violates our terms</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Remember: Your engagement helps authors improve and create more content you'll love!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary">I Understand</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Animation Keyframes */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideInLeft {
+        from { 
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from { 
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes popIn {
+        0% { 
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% { 
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    /* Animation Classes */
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease forwards;
+    }
+    
+    .animate-slide-in-left {
+        animation: slideInLeft 0.6s ease forwards;
+    }
+    
+    .animate-slide-in-right {
+        animation: slideInRight 0.6s ease forwards;
+    }
+    
+    .animate-pop-in {
+        animation: popIn 0.5s ease forwards;
+    }
+    
+    /* Card Hover Effects */
+    .story-card {
+        transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+        cursor: pointer;
+    }
+    
+    .story-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        background-color: #f8f9fa;
+    }
+    
+    .category-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+        height:100%;
+    }
+    
+    .category-card:hover {
+        transform: scale(1.08);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .stats-card, .stat-card {
+        transition: transform 0.3s;
+    }
+    
+    .stats-card:hover, .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stat-icon {
+        opacity: 0.8;
+    }
+    
+    .category-image {
+        height: 220px;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+        cursor: pointer;
+    }
+    
+    .category-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .category-message {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .btn {
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .btn:focus:not(:active)::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 0.5;
+        }
+        20% {
+            transform: scale(50, 50);
+            opacity: 0.3;
+        }
+        100% {
+            transform: scale(100, 100);
+            opacity: 0;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Counter animation for stats
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200; // The lower the slower
+        
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                
+                // Lower value to make counting faster
+                const inc = target / speed;
+                
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 1);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            
+            updateCount();
+        });
+        
+        // Create reading stats chart
+        const ctx = document.getElementById('readingStatsChart').getContext('2d');
+        const readingStatsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ reading_graph_data.labels | tojson }},
+                datasets: [{
+                    label: 'Your Reading Activity',
+                    data: {{ reading_graph_data.data | tojson }},
+                    backgroundColor: {{ reading_graph_data.colors | tojson }},
+                    borderColor: {{ reading_graph_data.colors | tojson }},
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Your Reading Statistics'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Category image click handler
+        const categoryImages = document.querySelectorAll('.category-image');
+        const categoryModal = new bootstrap.Modal(document.getElementById('categoryDetailModal'));
+        
+        categoryImages.forEach(image => {
+            image.addEventListener('click', function() {
+                const categoryName = this.getAttribute('data-category-name');
+                const categoryCount = this.getAttribute('data-category-count');
+                const imageSrc = this.getAttribute('src');
+                
+                // Update modal content
+                document.getElementById('modalCategoryName').textContent = categoryName;
+                document.getElementById('modalCategoryCount').textContent = categoryCount;
+                document.getElementById('modalCategoryImage').setAttribute('src', imageSrc);
+                document.getElementById('modalCategoryImage').setAttribute('alt', categoryName);
+                document.getElementById('messageCategoryName').textContent = categoryName;
+                document.getElementById('messageCategoryCount').textContent = categoryCount;
+                
+                // Show the modal
+                categoryModal.show();
+            });
+        });
+        
+        // Story card interaction
+        const storyCards = document.querySelectorAll('.story-card');
+        storyCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('read-story')) {
+                    const storyLink = this.querySelector('.read-story');
+                    if (storyLink) {
+                        // Add a quick animation before navigating
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            window.location.href = storyLink.href;
+                        }, 300);
+                    }
+                }
+            });
+        });
+        
+        // Like button simulation
+        const likeButtons = document.querySelectorAll('.fa-heart');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const likeCount = this.nextElementSibling || this.parentElement.nextElementSibling;
+                let count = parseInt(likeCount.textContent);
+                
+                if (this.classList.contains('text-danger')) {
+                    this.classList.remove('text-danger');
+                    likeCount.textContent = count - 1;
+                } else {
+                    this.classList.add('text-danger');
+                    likeCount.textContent = count + 1;
+                    
+                    // Add a quick animation
+                    this.style.transform = 'scale(1.3)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 300);
+                }
+            });
+        });
+        
+        // Category card interaction
+        const categoryCards = document.querySelectorAll('.category-card');
+        categoryCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Add animation feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 300);
+            });
+        });
+        
+        // Stat card interaction
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Add animation feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                    const title = this.querySelector('.card-title').textContent;
+                    alert(`Viewing details for: ${title}`);
+                }, 300);
+            });
+        });
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Add subtle animation to modal show
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('show.bs.modal', function () {
+                const modalContent = this.querySelector('.modal-content');
+                modalContent.style.transform = 'scale(0.7)';
+                setTimeout(() => {
+                    modalContent.style.transform = 'scale(1)';
+                }, 10);
+            });
+        });
+    });
+</script>
+{% endblock %}

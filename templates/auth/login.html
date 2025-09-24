@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Story Creator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Navbar Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color:black;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .main-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .menu-item {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            color: #6a11cb;
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        /* Footer Styles */
+        .site-footer {
+            background: #2d3333;
+            color: #fff;
+            padding: 60px 40px 30px;
+            position: relative;
+            font-family: 'Times New Roman', Times, serif;
+            width: 100%;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 2fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .footer-about h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .footer-about p {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .footer-social a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background: #444;
+            color: #fff;
+            border-radius: 50%;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+
+        .footer-social a:hover {
+            background: #6a11cb;
+        }
+
+        .footer-links,
+        .footer-newsletter {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .footer-links h3,
+        .footer-newsletter h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer-links ul li a:hover {
+            color: #fff;
+        }
+
+        .footer-newsletter p {
+            color: #ccc;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .footer-newsletter form {
+            display: flex;
+            border-radius: 25px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .footer-newsletter input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .footer-newsletter button {
+            background: #0d0630;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .footer-newsletter button:hover {
+            background: #6a11cb;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #444;
+            margin-top: 30px;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom a {
+            color: #aaa;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .footer-bottom a:hover {
+            color: #fff;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #0d0630;
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-size: 20px;
+            transition: 0.3s;
+            cursor: pointer;
+            z-index: 999;
+        }
+
+        .back-to-top:hover {
+            background: #6a11cb;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                flex-direction: column;
+                background-color: #fff;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+                padding: 2rem 0;
+                gap: 1.5rem;
+            }
+
+            .main-menu.active {
+                left: 0;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .menu-toggle.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .menu-toggle.active span:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            .menu-toggle.active span:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+            
+            .split-container {
+                flex-direction: column;
+            }
+            
+            .left-side {
+                padding: 30px 20px;
+            }
+            
+            .right-side {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            .site-footer {
+                padding: 40px 20px 20px;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+
+        /* Your Original Styles - Completely Unchanged */
+        body { 
+            font-family: 'Times New Roman', Times, serif; 
+            background-color: #f4f4f4; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 100px 20px 20px;
+            width: 100%;
+        }
+        
+        .split-container {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            min-height: 550px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .left-side {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .auth-container {
+            width: 100%;
+        }
+        
+        .auth-container h2 {
+            text-align: center; 
+            color: #333; 
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .form-group { 
+            margin-bottom: 15px; 
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 500;
+        }
+        
+        input[type="text"], input[type="password"], input[type="email"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 15px;
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: #5cb85c; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        button:hover { 
+            background-color: #4cae4c; 
+            transform: translateY(-2px);
+        }
+        
+        .error { 
+            color: #d9534f; 
+            text-align: center; 
+            margin-bottom: 10px; 
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
+        }
+        
+        .links { 
+            text-align: center; 
+            margin-top: 15px; 
+        }
+        
+        .links a {
+            color: #6a11cb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .links a:hover {
+            color: #4c0da7;
+            text-decoration: underline;
+        }
+        
+        .captcha-box { 
+            font-weight: bold; 
+            font-size: 18px; 
+            letter-spacing: 3px; 
+            background: #eee; 
+            padding: 8px; 
+            text-align: center; 
+            border-radius: 5px; 
+            margin-bottom: 8px; 
+            font-family: monospace;
+        }
+        
+        /* Right Side Styling with Effects */
+        .right-side {
+            flex: 1;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .right-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .right-side h2 {
+            font-weight: 700;
+            font-size: 32px;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+        
+        .right-side p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            animation: fadeInUp 1.2s ease;
+        }
+        
+        .features {
+            list-style: none;
+            animation: fadeInUp 1.4s ease;
+        }
+        
+        .features li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .features i {
+            background: rgba(255, 255, 255, 0.2);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .floating-icons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .floating-icons i {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.1;
+            color: white;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="header" id="header">
+        <a href="{{ url_for('auth.index') }}" class="logo-container">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="10" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(-15 17.5 50)" />
+                    <rect x="35" y="15" width="15" height="70" fill="url(#grad1)" />
+                    <rect x="60" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(15 67.5 50)" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.5" />
+                </svg>
+            </div>
+            <div class="logo-text" style="color: white;">STORY <font color="orange">TIME</font></div>
+        </a>
+
+        <nav class="main-menu" id="mainMenu">
+            <a href="{{ url_for('auth.index') }}" class="menu-item" style="color: white;">Home</a>
+            <a href="{{ url_for('auth.about') }}" class="menu-item" style="color: white;">About</a>
+            <a href="{{ url_for('auth.all_stories') }}" class="menu-item" style="color: white;">All Stories</a>
+            <a href="{{ url_for('auth.contact') }}" class="menu-item" style="color: white;">Contact</a>
+            <div style="display:flex; gap:5px;">
+                <a class="nav-link" href="{{ url_for('auth.login') }}" 
+                    style="color:black; background:white; padding:8px 20px;
+                            border-radius:6px 0 0 6px; font-weight:500;
+                            box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                            transition:all 0.3s ease; text-decoration:none;">
+                    Login
+                </a>
+                <a class="nav-link" href="{{ url_for('auth.register') }}" 
+                    style="color:#fff; background:blue; padding:8px 20px;
+                            border-radius:0 6px 6px 0; font-weight:500;
+                            box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                            transition:all 0.3s ease; text-decoration:none;">
+                    Register
+                </a>
+            </div>
+        </nav>
+
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="content-wrapper">
+        <div class="split-container">
+            <!-- Left Side - Login Form (Your original code) -->
+            <div class="left-side">
+                <div class="auth-container">
+                    <h2>Login</h2>
+                    {% if error %}
+                        <div class="error">{{ error }}</div>
+                    {% endif %}
+                    <form id="loginForm" method="POST" autocomplete="off">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" autocomplete="new-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" autocomplete="new-password" required>
+                        </div>
+
+                        <!-- CAPTCHA -->
+                        <div class="form-group">
+                            <label for="captcha">Enter the text shown below</label>
+                            <div class="captcha-box">{{ captcha_code }}</div>
+                            <input type="text" id="captcha" name="captcha" placeholder="Enter captcha here" required>
+                        </div>
+
+                        <button type="submit">Login</button>
+                    </form>
+                    <div class="links">
+                        <a href="{{ url_for('auth.register') }}">Create an account</a> | 
+                        <a href="{{ url_for('auth.forgot_password') }}">Forgot Password?</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side - Attractive Content -->
+            <div class="right-side">
+                <div class="floating-icons">
+                    <i class="fas fa-book floating" style="top: 10%; left: 20%; animation-delay: 0s;"></i>
+                    <i class="fas fa-pen-fancy floating" style="top: 30%; left: 80%; animation-delay: 1s;"></i>
+                    <i class="fas fa-globe floating" style="top: 50%; left: 15%; animation-delay: 2s;"></i>
+                    <i class="fas fa-star floating" style="top: 70%; left: 75%; animation-delay: 3s;"></i>
+                    <i class="fas fa-feather floating" style="top: 85%; left: 25%; animation-delay: 4s;"></i>
+                </div>
+                <div class="right-content">
+                    <h2>Welcome Back Storyteller!</h2>
+                    <p>Continue your journey in our community of creative writers and avid readers. Your next chapter awaits!</p>
+                    <ul class="features">
+                        <li><i class="fas fa-book-open"></i> Access your personalized reading list</li>
+                        <li><i class="fas fa-pencil-alt"></i> Continue working on your stories</li>
+                        <li><i class="fas fa-comments"></i> Connect with fellow writers</li>
+                        <li><i class="fas fa-trophy"></i> Track your reading achievements</li>
+                    </ul>
+                    <p class="note">Not a member yet? <a href="{{ url_for('auth.register') }}" style="color: #fff; text-decoration: underline;">Join our community</a> and unleash your creativity!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            
+            <!-- Left Section -->
+            <div class="footer-about">
+                <h2>STORY TIME</h2>
+                <p>Where stories come to life and imaginations soar. Join our community of storytellers and readers today.</p>
+                
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="footer-links">   
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ url_for('auth.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('auth.about') }}">About</a></li>
+                    <li><a href="{{ url_for('auth.all_stories') }}">Stories</a></li>
+                    <li><a href="{{ url_for('auth.contact') }}">Contact</a></li>
+                </ul>
+            </div>
+            
+            <!-- Resources -->
+            <div class="footer-links">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Writing Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            
+            <!-- Newsletter -->
+            <div class="footer-newsletter">
+                <h3>Newsletter</h3>
+                <p>Subscribe to get updates on new stories, features, and writing contests.</p>
+                <form>
+                    <input type="email" placeholder="Your email">
+                    <button type="submit">Subscribe</button>
+                </form>
+            </div>
+            
+        </div>
+        
+        <!-- Bottom Bar -->
+        <div class="footer-bottom">
+            <p>© 2023 StoryCraft. All rights reserved.</p>
+            <p><a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a></p>
+        </div>
+        
+        <!-- Back to Top Button -->
+        <a href="#" class="back-to-top">↑</a>
+    </footer>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Mobile menu toggle
+        const menuToggle = document.getElementById("menuToggle");
+        const mainMenu = document.getElementById("mainMenu");
+        
+        if (menuToggle) {
+            menuToggle.addEventListener("click", function() {
+                this.classList.toggle("active");
+                mainMenu.classList.toggle("active");
+            });
+        }
+        
+        // Back to top functionality
+        const backToTop = document.querySelector(".back-to-top");
+        if (backToTop) {
+            backToTop.addEventListener("click", function(e) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+        
+        // Add subtle animation to form elements on focus
+        const formInputs = document.querySelectorAll("input");
+        formInputs.forEach(input => {
+            input.addEventListener("focus", function() {
+                this.parentElement.style.transform = "translateY(-2px)";
+                this.parentElement.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.1)";
+            });
+            
+            input.addEventListener("blur", function() {
+                this.parentElement.style.transform = "translateY(0)";
+                this.parentElement.style.boxShadow = "none";
+            });
+        });
+    });
+    </script>
+</body>
+</html>

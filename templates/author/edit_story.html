@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow mb-4 animate__animated animate__fadeInUp">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h2 class="m-0 font-weight-bold text-primary" style="font-family: 'Times New Roman', Times, serif;">Edit Story: {{ story.title }}</h2>
+                <a href="{{ url_for('author.my_stories') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('author.update_story', story_id=story.id) }}" enctype="multipart/form-data" id="editStoryForm">
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Flash messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="flash-messages-container mb-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="title" class="form-label" style="font-family: 'Times New Roman', Times, serif;">Story Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="title" name="title" 
+                                       value="{{ story.title }}" placeholder="Enter a captivating title for your story" required
+                                       style="font-family: 'Times New Roman', Times, serif;">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="content" class="form-label" style="font-family: 'Times New Roman', Times, serif;">Story Content <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="content" name="content" rows="12" 
+                                          placeholder="Write your story here..." required
+                                          style="font-family: 'Times New Roman', Times, serif;">{{ story.content }}</textarea>
+                                <div class="form-text" style="font-family: 'Times New Roman', Times, serif;">You can use basic HTML tags for formatting.</div>
+                                <div class="form-text text-end" id="word-count" style="font-family: 'Times New Roman', Times, serif;">Words: {{ story.content.split() | length if story.content else 0 }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="m-0 font-weight-bold" style="font-family: 'Times New Roman', Times, serif;">Story Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label" style="font-family: 'Times New Roman', Times, serif;">Status</label>
+                                        <select class="form-select" id="status" name="status" style="font-family: 'Times New Roman', Times, serif;">
+                                            <option value="draft" {% if story.status == 'draft' %}selected{% endif %}>Draft</option>
+                                            <option value="published" {% if story.status == 'published' %}selected{% endif %}>Published</option>
+                                            <option value="scheduled" {% if story.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3" id="schedule-date" style="display: {% if story.status == 'scheduled' and story.publish_date %}block{% else %}none{% endif %};">
+                                        <label for="publish_date" class="form-label" style="font-family: 'Times New Roman', Times, serif;">Schedule Date & Time</label>
+                                        <input type="datetime-local" class="form-control" id="publish_date" name="publish_date" 
+                                               value="{{ story.formatted_publish_date }}"
+                                               style="font-family: 'Times New Roman', Times, serif;">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="category" class="form-label" style="font-family: 'Times New Roman', Times, serif;">Category</label>
+                                        <select class="form-select" id="category" name="category">
+                                            <option value="" {% if not story.category %}selected{% endif %}>Select a category</option>
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}" {% if story.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="m-0 font-weight-bold" style="font-family: 'Times New Roman', Times, serif;">Featured Image</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        {% if story.featured_image %}
+                                        <img id="image-preview" src="{{ url_for('static', filename=story.featured_image) }}" 
+                                             class="img-fluid rounded" alt="Current featured image" style="max-height: 200px; width: 100%; object-fit: cover;">
+                                        {% else %}
+                                        <img id="image-preview" src="https://via.placeholder.com/300x200?text=Upload+Image" 
+                                             class="img-fluid rounded" alt="Preview" style="max-height: 200px; width: 100%; object-fit: cover;">
+                                        {% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="file" class="form-control" id="featured_image" name="featured_image" 
+                                               accept="image/*" style="font-family: 'Times New Roman', Times, serif;">
+                                    </div>
+                                    {% if story.featured_image %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="remove_image" name="remove_image" value="1">
+                                        <label class="form-check-label" for="remove_image" style="font-family: 'Times New Roman', Times, serif;">
+                                            Remove current image
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text" style="font-family: 'Times New Roman', Times, serif;">Recommended size: 1200x800 pixels. JPG, PNG or GIF.</div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="m-0 font-weight-bold" style="font-family: 'Times New Roman', Times, serif;">Story Statistics</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="h5 text-primary mb-0" style="font-family: 'Times New Roman', Times, serif;">{{ story.views or 0 }}</div>
+                                            <small class="text-muted" style="font-family: 'Times New Roman', Times, serif;">Views</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="h5 text-success mb-0" style="font-family: 'Times New Roman', Times, serif;">{{ story.likes or 0 }}</div>
+                                            <small class="text-muted" style="font-family: 'Times New Roman', Times, serif;">Likes</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="h5 text-info mb-0" style="font-family: 'Times New Roman', Times, serif;">{{ story.comments or 0 }}</div>
+                                            <small class="text-muted" style="font-family: 'Times New Roman', Times, serif;">Comments</small>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="small text-muted" style="font-family: 'Times New Roman', Times, serif;">
+                                        <div><strong>Created:</strong> {{ story.created_at.strftime('%Y-%m-%d %H:%M') if story.created_at }}</div>
+                                        {% if story.updated_at and story.updated_at != story.created_at %}
+                                        <div><strong>Last Updated:</strong> {{ story.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                        {% endif %}
+                                        {% if story.publish_date and story.status == 'published' %}
+                                        <div><strong>Published:</strong> {{ story.publish_date.strftime('%Y-%m-%d %H:%M') }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <div>
+                            <button type="submit" name="action" value="save_draft" class="btn btn-secondary">
+                                <i class="fas fa-save me-1"></i> Save as Draft
+                            </button>
+                            <a href="{{ url_for('author.view_story', story_id=story.id) }}" class="btn btn-outline-secondary ms-2">
+                                Cancel
+                            </a>
+                        </div>
+                        <div>
+                            <!-- ✅ Changed value from 'publish' to 'update' -->
+                            <button type="submit" name="action" value="update" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-1"></i> Update Story
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card shadow mb-4 animate__animated animate__fadeInUp">
+            <div class="card-header py-3">
+                <h5 class="m-0 font-weight-bold text-info" style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-lightbulb me-2"></i>Editing Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 style="font-family: 'Times New Roman', Times, serif;">Improving Your Story</h6>
+                        <ul class="list-unstyled">
+                            <li style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-check text-success me-2"></i> Check for spelling and grammar errors</li>
+                            <li style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-check text-success me-2"></i> Ensure your title still matches the content</li>
+                            <li style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-check text-success me-2"></i> Consider reader feedback when making changes</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 style="font-family: 'Times New Roman', Times, serif;">SEO & Visibility</h6>
+                        <ul class="list-unstyled">
+                            <li style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-check text-success me-2"></i> Update tags to reach the right audience</li>
+                            <li style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-check text-success me-2"></i> A compelling featured image increases engagement</li>
+                            <li style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-check text-success me-2"></i> The right category helps readers find your story</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danger Zone Card -->
+        <div class="card shadow border-danger animate__animated animate__fadeInUp">
+            <div class="card-header py-3 bg-danger text-white">
+                <h5 class="m-0 font-weight-bold" style="font-family: 'Times New Roman', Times, serif;"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted" style="font-family: 'Times New Roman', Times, serif;">These actions are irreversible. Please be cautious.</p>
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash me-1"></i> Delete This Story
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" style="font-family: 'Times New Roman', Times, serif;">Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-family: 'Times New Roman', Times, serif;">Are you sure you want to delete "{{ story.title }}"? This action cannot be undone.</p>
+                <p class="text-muted" style="font-family: 'Times New Roman', Times, serif;"><small>All story data, including views and engagement statistics, will be permanently removed.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-family: 'Times New Roman', Times, serif;">Cancel</button>
+                <form action="{{ url_for('author.delete_story', story_id=story.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger" style="font-family: 'Times New Roman', Times, serif;">Delete Story</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show/hide schedule date based on status selection
+        const statusSelect = document.getElementById('status');
+        const scheduleDate = document.getElementById('schedule-date');
+        
+        function toggleScheduleDate() {
+            scheduleDate.style.display = statusSelect.value === 'scheduled' ? 'block' : 'none';
+        }
+        
+        statusSelect.addEventListener('change', toggleScheduleDate);
+        toggleScheduleDate(); // Initialize on page load
+        
+        // Image preview functionality
+        const featuredImage = document.getElementById('featured_image');
+        const imagePreview = document.getElementById('image-preview');
+        
+        if (featuredImage) {
+            featuredImage.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Auto-resize textarea as user types
+        const textarea = document.getElementById('content');
+        const wordCountDisplay = document.getElementById('word-count');
+        
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                // Auto-resize
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                
+                // Word count
+                const text = this.value.trim();
+                const wordCount = text ? text.split(/\s+/).length : 0;
+                wordCountDisplay.textContent = `Words: ${wordCount}`;
+            });
+            
+            // Initialize textarea height
+            setTimeout(() => {
+                textarea.style.height = 'auto';
+                textarea.style.height = (textarea.scrollHeight) + 'px';
+            }, 100);
+        }
+
+        // Set minimum datetime for schedule date to current time
+        const publishDate = document.getElementById('publish_date');
+        if (publishDate) {
+            const now = new Date();
+            const timezoneOffset = now.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
+            publishDate.min = localISOTime;
+        }
+        
+        // Form validation
+        const form = document.getElementById('editStoryForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const title = document.getElementById('title').value.trim();
+                const content = document.getElementById('content').value.trim();
+                
+                if (!title) {
+                    e.preventDefault();
+                    alert('Please enter a story title.');
+                    document.getElementById('title').focus();
+                    return false;
+                }
+                
+                if (!content) {
+                    e.preventDefault();
+                    alert('Please enter story content.');
+                    document.getElementById('content').focus();
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+    });
+</script>
+
+<style>
+    /* Animation classes */
+    .animate__animated {
+        animation-duration: 0.5s;
+    }
+    
+    /* Times New Roman font for all text */
+    body, h1, h2, h3, h4, h5, h6, .form-label, .form-text, .form-control, .form-select, 
+    .btn, .alert, .card-title, .card-text, .text-muted, small, .modal-title, .modal-body,
+    .list-unstyled li {
+        font-family: 'Times New Roman', Times, serif;
+    }
+    
+    /* Card hover effects */
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Button animations */
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Form focus effects */
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+</style>
+{% endblock %}

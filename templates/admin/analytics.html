@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Analytics Dashboard</h2>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-calendar me-1"></i> Last 30 Days
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                <li><a class="dropdown-item" href="#">This Year</a></li>
+                <li><a class="dropdown-item" href="#">Custom Range</a></li>
+            </ul>
+            <button class="btn btn-primary">
+                <i class="fas fa-download me-1"></i> Export Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">{{ stats.total_views | default(0) }}</h5>
+                            <p class="card-text">Total Views</p>
+                        </div>
+                        <i class="fas fa-eye fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-success">
+                            <i class="fas fa-arrow-up me-1"></i> 12.5%
+                        </span>
+                        <span class="ms-2">vs previous period</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">{{ stats.total_likes | default(0) }}</h5>
+                            <p class="card-text">Total Likes</p>
+                        </div>
+                        <i class="fas fa-heart fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-success">
+                            <i class="fas fa-arrow-up me-1"></i> 8.2%
+                        </span>
+                        <span class="ms-2">vs previous period</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">{{ stats.total_comments | default(0) }}</h5>
+                            <p class="card-text">Total Comments</p>
+                        </div>
+                        <i class="fas fa-comment fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-success">
+                            <i class="fas fa-arrow-up me-1"></i> 5.7%
+                        </span>
+                        <span class="ms-2">vs previous period</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">{{ stats.avg_engagement | default(0) }}%</h5>
+                            <p class="card-text">Engagement Rate</p>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-success">
+                            <i class="fas fa-arrow-up me-1"></i> 2.3%
+                        </span>
+                        <span class="ms-2">vs previous period</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">Traffic Overview</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary active">Views</button>
+                            <button type="button" class="btn btn-outline-secondary">Likes</button>
+                            <button type="button" class="btn btn-outline-secondary">Comments</button>
+                        </div>
+                    </div>
+                    <canvas id="trafficChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Content Distribution</h5>
+                    <canvas id="contentDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Top Performing Stories</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Story Title</th>
+                                    <th>Author</th>
+                                    <th>Views</th>
+                                    <th>Engagement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for story in top_stories %}
+                                <tr>
+                                    <td>{{ story.title | default('Untitled') }}</td>
+                                    <td>{{ story.author | default('Unknown') }}</td>
+                                    <td>{{ story.views | default(0) }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ story.engagement | default(0) }}%;" 
+                                                 aria-valuenow="{{ story.engagement | default(0) }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100"></div>
+                                        </div>
+                                        <small>{{ story.engagement | default(0) }}%</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Audience Demographics</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-center">Age Distribution</h6>
+                            <canvas id="ageChart" height="180"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-center">Gender Distribution</h6>
+                            <canvas id="genderChart" height="180"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Top Locations</h6>
+                        <div class="list-group">
+                            {% for location in top_locations %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ location.country }}
+                                <span class="badge bg-primary rounded-pill">{{ location.percentage }}%</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Author Performance</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Stories</th>
+                                    <th>Avg. Views</th>
+                                    <th>Avg. Engagement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for author in author_performance %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://ui-avatars.com/api/?name={{ author.name | default('Unknown') }}&background=random&size=35" 
+                                                 class="profile-img me-2" alt="{{ author.name | default('Unknown') }}">
+                                            {{ author.name | default('Unknown') }}
+                                        </div>
+                                    </td>
+                                    <td>{{ author.stories | default(0) }}</td>
+                                    <td>{{ author.avg_views | default(0) }}</td>
+                                    <td>
+                                        {% set engagement = author.avg_engagement | default(0) %}
+                                        {% set engagement_class = 'success' if engagement > 7 else 'warning' if engagement > 4 else 'danger' %}
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-{{ engagement_class }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ engagement * 10 }}%;" 
+                                                 aria-valuenow="{{ engagement }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="10"></div>
+                                        </div>
+                                        <small>{{ engagement }}%</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Traffic Sources</h5>
+                    <canvas id="trafficSourcesChart" height="250"></canvas>
+                    <div class="row mt-3">
+                        {% for source in traffic_sources %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ source.name }}</span>
+                                <span class="fw-bold">{{ source.percentage }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-{{ source.color }}" 
+                                     role="progressbar" 
+                                     style="width: {{ source.percentage }}%;" 
+                                     aria-valuenow="{{ source.percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format large numbers with commas
+        function formatNumber(num) {
+            if (num === null || num === undefined) return "0";
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // Format numbers in the stats cards
+        document.querySelectorAll('.card-title').forEach(el => {
+            const text = el.textContent.trim();
+            if (!isNaN(text) && text !== '') {
+                const num = parseInt(text);
+                if (num > 1000) {
+                    el.textContent = formatNumber(num);
+                }
+            } else if (text.endsWith('%')) {
+                const num = parseFloat(text);
+                if (!isNaN(num)) {
+                    el.textContent = num.toFixed(1) + '%';
+                }
+            }
+        });
+        
+        // Format numbers in tables
+        document.querySelectorAll('td').forEach(el => {
+            const text = el.textContent.trim();
+            if (!isNaN(text) && text !== '' && text.length > 3) {
+                const num = parseInt(text);
+                el.textContent = formatNumber(num);
+            }
+        });
+
+        // Traffic Overview Chart
+        const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Page Views',
+                    data: [1200, 1900, 1500, 2100, 1800, 2500, 2200, 2400, 2800, 3000, 3200, 3500],
+                    borderColor: '#3a7bd5',
+                    backgroundColor: 'rgba(58, 123, 213, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Unique Visitors',
+                    data: [800, 1200, 1100, 1400, 1300, 1800, 1600, 1700, 2000, 2200, 2400, 2600],
+                    borderColor: '#00d2ff',
+                    backgroundColor: 'rgba(0, 210, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000) {
+                                    return value / 1000 + 'K';
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Content Distribution Chart
+        const contentCtx = document.getElementById('contentDistributionChart').getContext('2d');
+        const contentChart = new Chart(contentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Technology', 'Lifestyle', 'Health', 'Travel', 'Business'],
+                datasets: [{
+                    data: [30, 25, 20, 15, 10],
+                    backgroundColor: [
+                        '#3a7bd5',
+                        '#00d2ff',
+                        '#f5576c',
+                        '#fdbb2d',
+                        '#38f9d7'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Age Distribution Chart
+        const ageCtx = document.getElementById('ageChart').getContext('2d');
+        const ageChart = new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ['18-24', '25-34', '35-44', '45-54', '55+'],
+                datasets: [{
+                    label: 'Percentage',
+                    data: [15, 35, 25, 15, 10],
+                    backgroundColor: '#3a7bd5'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 40,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gender Distribution Chart
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        const genderChart = new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Male', 'Female', 'Other'],
+                datasets: [{
+                    data: [55, 42, 3],
+                    backgroundColor: [
+                        '#3a7bd5',
+                        '#f5576c',
+                        '#fdbb2d'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Traffic Sources Chart
+        const sourcesCtx = document.getElementById('trafficSourcesChart').getContext('2d');
+        const sourcesChart = new Chart(sourcesCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Direct', 'Social Media', 'Search Engines', 'Referrals', 'Email'],
+                datasets: [{
+                    data: [35, 25, 20, 15, 5],
+                    backgroundColor: [
+                        '#3a7bd5',
+                        '#00d2ff',
+                        '#f5576c',
+                        '#fdbb2d',
+                        '#38f9d7'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Chart type toggle
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.btn-group .btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

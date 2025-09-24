@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>My Profile</h3>
+
+    <div class="mb-3">
+        {% if profile_image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ profile_image) }}" 
+                 class="rounded-circle" width="120" height="120" alt="Profile">
+        {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ username|urlencode }}&background=random&size=120" 
+                 class="rounded-circle" width="120" height="120" alt="Default Profile">
+        {% endif %}
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input type="file" class="form-control" name="file" accept="image/*" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+</div>
+{% endblock %}

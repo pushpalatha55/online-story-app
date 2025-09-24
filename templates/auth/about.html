@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StoryCraft - About Us</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root 
+    {
+      --primary:#0b043f; --secondary:#a29bfe; --accent:#fd79a8;
+      --dark:#2d3436; --light:#f7f7f7;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Times New Roman', Times, serif;
+      color:var(--dark);
+      background-color:var(--light);
+      overflow-x:hidden;
+    }
+    h1,h2,h3,h4,h5{
+      font-family:'Playfair Display',serif;
+      font-weight:700;
+      margin:0 0 .6rem 0;
+    }
+
+    .hero-section{
+      background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);
+      color:#fff; padding:120px 0 80px;
+      clip-path:polygon(0 0,100% 0,100% 90%,0 100%);
+      margin-bottom:60px;
+      background-attachment: fixed;
+    }
+
+    .section-title{position:relative;margin-bottom:40px;padding-bottom:15px;}
+    .section-title::after{content:'';position:absolute;left:0;bottom:0;width:60px;height:3px;background:var(--primary);}
+    .section-title.center{text-align:center;}
+    .section-title.center::after{left:50%;transform:translateX(-50%);}
+
+    .card{
+      border:none;border-radius:10px;overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      transition:all .3s ease;margin-bottom:20px;
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    .card:hover{transform:translateY(-10px);box-shadow:0 15px 35px rgba(0,0,0,.15);}
+    .role-card{text-align:center;padding:30px 20px;}
+    .role-icon{font-size:3rem;color:var(--primary);margin-bottom:20px;}
+
+    .testimonial-card{padding:30px;background:#fff;border-radius:10px;position:relative;}
+    .testimonial-card::after{
+      content:'\201D';position:absolute;top:20px;right:30px;
+      font-size:5rem;color:var(--secondary);opacity:.2;font-family:'Playfair Display',serif;
+    }
+    .testimonial-img{width:70px;height:70px;border-radius:50%;object-fit:cover;border:4px solid var(--secondary);}
+    .carousel-indicators button{width:12px;height:12px;border-radius:50%;background-color:var(--primary);}
+
+    .timeline{position:relative;padding-left:3rem;margin:0 auto;}
+    .timeline::before{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:var(--primary);border-radius:10px;}
+    .timeline-item{position:relative;margin-bottom:2.5rem;transform: translateX(-20px);opacity: 0;}
+    .timeline-item::before{
+      content:'';position:absolute;left:-3.4rem;top:.5rem;width:20px;height:20px;border-radius:50%;
+      background:var(--primary);border:4px solid var(--light);
+    }
+
+    .btn-primary{
+      background-color:var(--primary);border-color:var(--primary);
+      padding:10px 25px;border-radius:30px;font-weight:500;transition:all .3s ease;
+    }
+    .btn-primary:hover{
+      background-color:var(--secondary);border-color:var(--secondary);
+      transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,.1);
+    }
+
+    footer{
+      background:var(--dark);color:#fff;padding:60px 0 30px;
+      clip-path:polygon(0 10%,100% 0,100% 100%,0 100%);
+    }
+    .social-icon{
+      display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;
+      background:rgba(255,255,255,.1);color:#fff;margin-right:10px;transition:all .3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .social-icon:hover{background:var(--primary);transform:translateY(-3px);}
+    .social-icon:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: 0.5s;
+    }
+    .social-icon:hover:before {
+      left: 100%;
+    }
+
+    /* Smooth reveal fix (prevents "white space" caused by stuck opacity:0) */
+    .reveal{opacity:0; transform:translateY(20px);}
+    .reveal.show{opacity:1; transform:translateY(0); transition:opacity .8s ease, transform .8s ease;}
+
+    /* Minor spacing normalization to avoid unexpected gaps */
+    section{background:transparent;}
+    .bg-light{background:#f8f9fa !important;}
+
+    #cta-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 8s ease infinite;
+    }
+    
+    /* Header styles */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: black;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      color: #ffffff;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+    
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .main-menu {
+      display: flex;
+    }
+    
+    .menu-item {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    .menu-item:hover, .menu-item.active {
+      color: var(--primary);
+    }
+    
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    
+    .menu-toggle span {
+      width: 25px;
+      height: 3px;
+      background: var(--primary);
+      margin: 3px 0;
+      transition: 0.3s;
+    }
+    
+    /* Text animation for headings */
+    .hero-section h1 span {
+      transform: translateY(20px);
+      opacity: 0;
+      display: inline-block;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Additional animation classes */
+    .reveal.show.fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    .reveal.show.slide-up {
+      animation: slideUp 0.8s ease forwards;
+    }
+
+    .reveal.show.slide-left {
+      animation: slideLeft 0.8s ease forwards;
+    }
+
+    .reveal.show.slide-right {
+      animation: slideRight 0.8s ease forwards;
+    }
+
+    .reveal.show.zoom-in {
+      animation: zoomIn 0.8s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideLeft {
+      from { 
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideRight {
+      from { 
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes zoomIn {
+      from { 
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to { 
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Enhanced form focus effects */
+    .form-control:focus {
+      box-shadow: 0 0 0 0.25rem rgba(11, 4, 63, 0.25);
+      border-color: var(--primary);
+    }
+
+    /* Pulse animation for CTA buttons */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .btn-pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .main-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .main-menu.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      .menu-item {
+        margin: 0.5rem 0;
+      }
+      
+      .menu-toggle {
+        display: flex;
+      }
+      
+      .hero-section {
+        padding: 150px 0 60px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header" id="header">
+    <a href="{{ url_for('auth.index') }}" class="logo-container">
+      <div class="logo">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <rect x="10" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(-15 17.5 50)" />
+          <rect x="35" y="15" width="15" height="70" fill="url(#grad1)" />
+          <rect x="60" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(15 67.5 50)" />
+          <circle cx="50" cy="50" r="45" fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.5" />
+        </svg>
+      </div>
+      <div class="logo-text" style="color: white;">STORY <font color="orange">TIME</font></div>
+    </a>
+
+    <nav class="main-menu" id="mainMenu">
+      <div style="padding-top:7px ;">
+      <a href="{{ url_for('auth.index') }}" class="menu-item" style="color: white;">Home</a>
+      <a href="{{ url_for('auth.about') }}" class="menu-item active" style="color: white;">About</a>
+      <a href="{{ url_for('auth.all_stories') }}" class="menu-item" style="color: white;">All Stories</a>
+      <a href="{{ url_for('auth.contact') }}" class="menu-item" style="color: white;">Contact</a>
+      </div>
+      <div style="display:flex; gap:5px;">
+            <a class="nav-link" href="{{ url_for('auth.login') }}" 
+              style="color:black; background:white; padding:8px 20px;
+                      border-radius:6px 0 0 6px; font-weight:500;
+                      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                      transition:all 0.3s ease; text-decoration:none;">
+              Login
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.register') }}" 
+              style="color:#fff; background:blue; padding:8px 20px;
+                      border-radius:0 6px 6px 0; font-weight:500;
+                      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+                      transition:all 0.3s ease; text-decoration:none;">
+              Register
+            </a>
+          </div>
+    </nav>
+
+    <div class="menu-toggle" id="menuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <h1 class="display-3 fw-bold mb-4">Welcome</h1>
+          <p class="lead mb-4">Where imagination comes to life and stories find their voice. We're building a
+            community for storytellers and readers to connect, create, and share extraordinary tales.</p>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg btn-pulse">Explore Our Story</a>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+          <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=800&q=80"
+               alt="Books" class="img-fluid rounded shadow">
+    
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vision & Mission Section -->
+  <section class="py-5" id="explore">
+    <div class="container py-5">
+      <div class="row">
+        <div class="col-lg-6 mb-5 mb-lg-0 reveal">
+          <h2 class="section-title">Our Vision</h2>
+          <p class="lead">To create the world's most vibrant and inclusive platform for storytelling, where
+            every voice can be heard and every story can find its audience.</p>
+          <p>We envision a digital sanctuary where creativity flourishes, boundaries dissolve, and stories
+            become bridges connecting people across cultures, generations, and experiences.</p>
+        </div>
+        <div class="col-lg-6 reveal">
+          <h2 class="section-title">Our Mission</h2>
+          <p class="lead">To empower writers and delight readers through innovative technology, supportive
+            community, and endless creative possibilities.</p>
+          <p>We're committed to building tools that inspire creativity, foster connection, and make the art of
+            storytelling accessible to everyone, from aspiring writers to literary enthusiasts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Theme Section -->
+  <section class="py-5 bg-light">
+    <div class="container py-5">
+      <h2 class="section-title center mb-5 reveal">Our Main Theme</h2>
+      <div class="row">
+        <div class="col-lg-10 mx-auto reveal">
+          <div id="cta-section" class="card text-white">
+            <div class="card-body p-5 text-center">
+              <i class="fas fa-book-open display-1 mb-4"></i>
+              <h3 class="card-title mb-4">"Where Stories Unfold and Communities Grow"</h3>
+              <p class="card-text lead">At StoryCraft, we believe that every story matters and every voice
+                deserves to be heard. Our platform is designed to be more than just a place to read and
+                write—it's a thriving ecosystem where creativity is nurtured, talents are discovered,
+                and connections are made that transcend the digital realm.</p>
+              <p class="card-text">Through collaborative storytelling, interactive features, and a
+                supportive environment, we're redefining what it means to be part of a literary
+                community in the digital age.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roles Section -->
+  <section class="py-5">
+    <div class="container py-5">
+      <h2 class="section-title center mb-5 reveal">Platform Roles</h2>
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4 reveal">
+          <div class="card role-card h-100">
+            <div class="role-icon"><i class="fas fa-pen-fancy"></i></div>
+            <h4>Authors</h4>
+            <p>Create, publish, and monetize your stories with our powerful writing tools and supportive community.</p>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-primary me-2"></i> Advanced writing dashboard</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Reader feedback system</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Monetization options</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 reveal">
+          <div class="card role-card h-100">
+            <div class="role-icon"><i class="fas fa-book-reader"></i></div>
+            <h4>Readers</h4>
+            <p>Discover endless stories, personalize your reading experience, and connect with your favorite authors.</p>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-primary me-2"></i> Personalized recommendations</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Reading lists & bookmarks</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Community discussions</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 reveal">
+          <div class="card role-card h-100">
+            <div class="role-icon"><i class="fas fa-users"></i></div>
+            <h4>Community Users</h4>
+            <p>Join discussions, participate in writing challenges, and be part of a vibrant creative community.</p>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-primary me-2"></i> Forums and groups</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Writing challenges</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Collaborative projects</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 reveal">
+          <div class="card role-card h-100">
+            <div class="role-icon"><i class="fas fa-cog"></i></div>
+            <h4>Administrators</h4>
+            <p>Maintain platform quality, support community growth, and ensure a safe environment for all users.</p>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-primary me-2"></i> Content moderation tools</li>
+              <li><i class="fas fa-check text-primary me-2"></i> Community analytics</li>
+              <li><i class="fas fa-check text-primary me-2"></i> User support system</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Future Goals Section -->
+  <section class="py-5 bg-light">
+    <div class="container py-5">
+      <h2 class="section-title center mb-5 reveal">Future Goals</h2>
+      <div class="row">
+        <div class="col-lg-10 mx-auto">
+          <div class="timeline reveal">
+            <div class="timeline-item">
+              <h4>2025 - Mobile App Launch</h4>
+              <p>Release our iOS and Android applications for reading and writing on the go with full synchronization.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>2026 - Interactive Storytelling</h4>
+              <p>Introduce choose-your-own-adventure tools and multimedia integration for immersive stories.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>2027 - Global Translation</h4>
+              <p>Implement AI-assisted translation to break language barriers and connect stories across cultures.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>2028 - Virtual Storyworlds</h4>
+              <p>Develop immersive VR/AR experiences for stories, creating truly dimensional narrative environments.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Carousel -->
+  <section class="py-5">
+    <div class="container py-5">
+      <h2 class="section-title center mb-5 reveal">What Our Community Says</h2>
+      <div class="row">
+        <div class="col-lg-10 mx-auto reveal">
+          <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+              <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="0" class="active"></button>
+              <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="1"></button>
+              <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="2"></button>
+            </div>
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <div class="testimonial-card">
+                  <div class="d-flex align-items-center mb-4">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="User" class="testimonial-img me-3">
+                    <div>
+                      <h5 class="mb-0">Michael Chen</h5>
+                      <p class="text-muted mb-0">Published Author</p>
+                    </div>
+                  </div>
+                  <p class="fst-italic">"StoryCraft transformed my writing journey. The feedback system helped me refine my novel, and now I have a published book with a dedicated reader base. This platform is every writer's dream come true."</p>
+                  <div class="text-primary">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="testimonial-card">
+                  <div class="d-flex align-items-center mb-4">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" alt="User" class="testimonial-img me-3">
+                    <div>
+                      <h5 class="mb-0">Sarah Johnson</h5>
+                      <p class="text-muted mb-0">Avid Reader</p>
+                    </div>
+                  </div>
+                  <p class="fst-italic">"I've discovered so many incredible stories and talented writers on StoryCraft. The recommendation algorithm knows my taste better than I do! It's like having a personal librarian who always suggests the perfect story."</p>
+                  <div class="text-primary">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="testimonial-card">
+                  <div class="d-flex align-items-center mb-4">
+                    <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=100&q=80" alt="User" class="testimonial-img me-3">
+                    <div>
+                      <h5 class="mb-0">Alex Rivera</h5>
+                      <p class="text-muted mb-0">Writing Coach</p>
+                    </div>
+                  </div>
+                  <p class="fst-italic">"As a writing mentor, I've seen many platforms, but StoryCraft stands out for its community support and excellent tools. My students have flourished here, gaining confidence and building audiences for their work."</p>
+                  <div class="text-primary">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /.carousel-inner -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section id="cta-section" class="py-5 text-white">
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center reveal">
+          <h2 class="mb-4">Ready to Begin Your Story Journey?</h2>
+          <p class="lead mb-4">Join thousands of writers and readers in our vibrant community. Create, share, and discover stories that inspire.</p>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg me-3 btn-pulse">Sign Up Free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4 mb-lg-0">
+          <h3 class="text-white mb-4">StoryCraft</h3>
+          <p>Where stories come to life and imaginations soar. Join our community of storytellers and readers today.</p>
+          <div class="mt-4">
+            <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+          <h5 class="text-white mb-4">Quick Links</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><a href="{{ url_for('auth.index') }}" class="text-white-50 text-decoration-none">Home</a></li>
+            <li class="mb-2"><a href="{{ url_for('auth.about') }}" class="text-white-50 text-decoration-none">About</a></li>
+            <li class="mb-2"><a href="{{ url_for('auth.all_stories') }}" class="text-white-50 text-decoration-none">Stories</a></li>
+            <li class="mb-2"><a href="{{ url_for('auth.contact') }}" class="text-white-50 text-decoration-none">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+          <h5 class="text-white mb-4">Resources</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Blog</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Help Center</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Writing Tips</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 col-md-4">
+          <h5 class="text-white mb-4">Newsletter</h5>
+          <p class="text-white-50">Subscribe to get updates on new stories, features, and writing contests.</p>
+          <form>
+            <div class="input-group mb-3">
+              <input type="email" class="form-control" placeholder="Your email" aria-label="Email">
+              <button class="btn btn-primary" type="button">Subscribe</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <hr class="my-4 bg-white-50">
+      <div class="row">
+        <div class="col-md-6 text-center text-md-start">
+          <p class="text-white-50 mb-0">&copy; 2023 StoryCraft. All rights reserved.</p>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <p class="text-white-50 mb-0">
+            <a href="#" class="text-white-50 text-decoration-none">Terms of Service</a> |
+            <a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Enhanced navigation with smooth scrolling and active state
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // Update active state in navigation
+          document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+          });
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // Parallax effect for hero section
+    window.addEventListener('scroll', function() {
+      const scrolled = window.pageYOffset;
+      const hero = document.querySelector('.hero-section');
+      if (hero) {
+        const parallaxSpeed = 0.5;
+        hero.style.backgroundPositionY = -(scrolled * parallaxSpeed) + 'px';
+      }
+    });
+
+    // Staggered animations for cards and timeline items
+    function animateElementsSequentially() {
+      const cards = document.querySelectorAll('.card');
+      const timelineItems = document.querySelectorAll('.timeline-item');
+      
+      cards.forEach((card, index) => {
+        setTimeout(() => {
+          card.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+          card.style.transform = 'translateY(0)';
+          card.style.opacity = '1';
+        }, index * 150);
+      });
+      
+      timelineItems.forEach((item, index) => {
+        setTimeout(() => {
+          item.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+          item.style.transform = 'translateX(0)';
+          item.style.opacity = '1';
+        }, index * 200);
+      });
+    }
+
+    // Interactive hover effects for cards
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.transform = 'translateY(20px)';
+      card.style.opacity = '0';
+      
+      card.addEventListener('mouseenter', function() {
+        this.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)';
+        this.style.transform = 'translateY(-12px) scale(1.02)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.08)';
+        this.style.transform = 'translateY(-5px)';
+      });
+    });
+
+    // Reading progress indicator
+    const progressBar = document.createElement('div');
+    progressBar.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 4px;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      z-index: 9999;
+      transition: width 0.2s ease;
+    `;
+    document.body.appendChild(progressBar);
+
+    window.addEventListener('scroll', function() {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.pageYOffset;
+      const progress = (scrollTop / (documentHeight - windowHeight)) * 100;
+      progressBar.style.width = progress + '%';
+    });
+
+    // Back to top button
+    const backToTop = document.createElement('button');
+    backToTop.innerHTML = '<i class="fas fa-arrow-up"></i>';
+    backToTop.style.cssText = `
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    `;
+    document.body.appendChild(backToTop);
+
+    backToTop.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px) scale(1.1)';
+      this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
+    });
+
+    backToTop.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0) scale(1)';
+      this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    });
+
+    backToTop.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 500) {
+        backToTop.style.display = 'flex';
+      } else {
+        backToTop.style.display = 'none';
+      }
+    });
+
+    // Enhanced testimonial carousel with autoplay
+    const testimonialCarousel = document.getElementById('testimonialCarousel');
+    if (testimonialCarousel) {
+      const carousel = new bootstrap.Carousel(testimonialCarousel, {
+        interval: 5000,
+        wrap: true
+      });
+      
+      // Pause on hover
+      testimonialCarousel.addEventListener('mouseenter', function() {
+        carousel.pause();
+      });
+      
+      testimonialCarousel.addEventListener('mouseleave', function() {
+        carousel.cycle();
+      });
+    }
+
+    // Text animation for main heading
+    const heroHeading = document.querySelector('.hero-section h1');
+    if (heroHeading) {
+      const text = heroHeading.textContent;
+      heroHeading.innerHTML = '';
+      
+      for (let i = 0; i < text.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = text[i];
+        span.style.opacity = '0';
+        span.style.display = 'inline-block';
+        span.style.transition = `opacity 0.3s ease ${i * 0.05}s, transform 0.3s ease ${i * 0.05}s`;
+        heroHeading.appendChild(span);
+        
+        setTimeout(() => {
+          span.style.opacity = '1';
+          span.style.transform = 'translateY(0)';
+        }, 500);
+      }
+    }
+
+    // Subtle background animation for CTA sections
+    function animateBackground() {
+      const ctaSections = document.querySelectorAll('#cta-section');
+      ctaSections.forEach(section => {
+        section.style.backgroundSize = '200% 200%';
+        section.style.animation = 'gradientShift 8s ease infinite';
+      });
+    }
+
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const mainMenu = document.getElementById('mainMenu');
+    
+    if (menuToggle && mainMenu) {
+      menuToggle.addEventListener('click', function() {
+        mainMenu.classList.toggle('active');
+        this.classList.toggle('active');
+      });
+    }
+
+    // Enhanced reveal on scroll with more options
+    function checkReveal() {
+      document.querySelectorAll('.reveal').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const isVisible = (rect.top <= (window.innerHeight - 100));
+        
+        if (isVisible) {
+          el.classList.add('show');
+        }
+      });
+    }
+
+    // Initialize all effects when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      animateElementsSequentially();
+      animateBackground();
+      
+      // Initialize timeline items
+      document.querySelectorAll('.timeline-item').forEach(item => {
+        item.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+      });
+      
+      // Initial reveal check
+      checkReveal();
+    });
+
+    // Update the existing reveal check with enhanced version
+    document.addEventListener('scroll', checkReveal);
+    window.addEventListener('load', checkReveal);
+    window.addEventListener('resize', checkReveal);
+  </script>
+</body>
+</html>

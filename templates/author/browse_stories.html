@@ -1,0 +1,749 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Filters Card -->
+  <div class="card mb-4" id="filtersCard">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Filter Stories</h5>
+          <button class="btn btn-sm btn-outline-primary" type="button" id="toggleSavedStories">
+              <i class="fas fa-bookmark"></i> View Saved Stories
+          </button>
+      </div>
+      <div class="card-body">
+          <form method="get" class="row g-3" id="filterForm">
+              <input type="hidden" name="page" value="1">
+              
+              <div class="col-md-4">
+                  <label for="searchInput" class="form-label">Search</label>
+                  <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" id="searchInput" name="search" class="form-control" placeholder="Search titles, content or authors..."
+                             value="{{ request.args.get('search', '') }}">
+                  </div>
+              </div>
+              <div class="col-md-3">
+                  <label for="statusSelect" class="form-label">Status</label>
+                  <select id="statusSelect" name="status" class="form-select text-dark">
+                      <option value="">All Statuses</option>
+                      <option value="published" {% if request.args.get('status') == 'published' %}selected{% endif %}>Published</option>
+                      <option value="draft" {% if request.args.get('status') == 'draft' %}selected{% endif %}>Draft</option>
+                      <option value="scheduled" {% if request.args.get('status') == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                  </select>
+              </div>
+              <div class="col-md-3">
+                <label for="categorySelect" class="form-label text-dark">Category</label>
+                <select id="categorySelect" name="category" class="form-select text-dark" style="background-color:white;">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if request.args.get('category') == cat.id|string %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100 me-2">Apply</button>
+                  <a href="{{ url_for('author.browse_stories') }}" class="btn btn-outline-secondary">Clear</a>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- Saved Stories Section (Initially Hidden) -->
+  <div class="card mb-4 d-none" id="savedStoriesSection">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="fas fa-bookmark text-primary me-2"></i> Saved Stories</h5>
+          <button class="btn btn-sm btn-outline-secondary" type="button" id="closeSavedStories">
+              <i class="fas fa-times"></i> Close
+          </button>
+      </div>
+      <div class="card-body">
+          <div class="row" id="savedStoriesGrid">
+              <!-- Saved stories will be loaded here dynamically -->
+              <div class="col-12 text-center py-4">
+                  <div class="no-saved-stories">
+                      <i class="fas fa-bookmark fa-3x mb-3 text-muted"></i>
+                      <h5 class="text-muted">No saved stories yet</h5>
+                      <p class="text-muted">Click the bookmark icon on any story to save it for later</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- All Stories Grid -->
+  <div class="row" id="storiesGridView">
+    {% for story in stories %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4 story-item" 
+         data-status="{{ story.status }}" 
+         data-category="{{ story.category_name|lower if story.category_name else 'uncategorized' }}"
+         data-title="{{ story.title|lower }}"
+         data-content="{{ story.content|lower }}"
+         data-author="{{ story.author_name|lower }}">
+      <div class="card story-card h-100 border-0 shadow-sm hover-shadow story-card-enhanced">
+        <!-- Image with overlay effect -->
+        <div class="story-image-container">
+          <img src="{{ url_for('static', filename=story.featured_image) if story.featured_image.startswith('uploads/') else story.featured_image }}" class="card-img-top story-image" alt="{{ story.title }}">
+          <div class="image-overlay"></div>
+          <div class="card-header-overlay d-flex justify-content-between align-items-center">
+            <span class="badge {% if story.status == 'published' %}bg-success{% elif story.status == 'draft' %}bg-warning{% else %}bg-info{% endif %}">
+                {{ story.status|title }}
+            </span>
+            <button class="btn btn-icon save-story-btn" data-id="{{ story.id }}" title="Save for later">
+              <i class="far fa-bookmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <h5 class="card-title text-truncate" 
+                        style="color:rgb(12, 34, 228);
+                            font-weight:bold;
+                            letter-spacing:1px;
+                            text-transform:uppercase;">
+                    {{ story.title }}
+                    </h5>
+          <p class="card-text small story-excerpt" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ story.content|striptags|truncate(150) }}</p>
+
+          <div class="mb-2">
+            <span class="badge bg-primary category-badge">
+              {% if story.category %}
+                {{ story.category }}
+              {% else %}
+                Uncategorized
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center mt-3 author-info">
+            {% if story.author_profile_pic %}
+              <img src="{{ url_for('static', filename='uploads/' ~ story.author_profile_pic) }}" class="profile-img me-2" alt="{{ story.author_name }}">
+            {% else %}
+              <div class="profile-placeholder me-2">
+                <i class="fas fa-user"></i>
+              </div>
+            {% endif %}
+            <p class="mb-0 small text-muted"><i class="fas fa-user me-1"></i> {{ story.author_name }}</p>
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted"><i class="far fa-calendar me-1"></i>{{ story.created_at.strftime('%b %d, %Y') }}</small>
+
+            <div class="btn-group story-actions" role="group" aria-label="story actions">
+              <!-- ✅ changed here -->
+              <a href="{{ url_for('author.views_story', story_id=story.id) }}" class="btn btn-sm btn-outline-primary read-btn">
+                <i class="fas fa-book-open me-1"></i>Read
+              </a>
+
+              <button class="btn btn-sm btn-outline-danger like-btn" data-id="{{ story.id }}" title="Like">
+                <i class="fas fa-heart"></i> <span class="like-count">{{ story.likes or 0 }}</span>
+              </button>
+
+              <button class="btn btn-sm btn-outline-success share-btn" data-id="{{ story.id }}" title="Share">
+                <i class="fas fa-share-alt"></i> <span class="share-count">{{ story.shares or 0 }}</span>
+              </button>
+
+              <a class="btn btn-sm btn-outline-secondary view-btn" href="#" data-id="{{ story.id }}">
+                <i class="fas fa-eye"></i> <span class="view-count">{{ story.views or 0 }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+      <div class="no-stories-placeholder">
+        <i class="fas fa-book-open fa-3x mb-3 text-muted"></i>
+        <h4 class="text-muted">No stories found</h4>
+        <p class="text-muted">Try adjusting your filters or check back later</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination Controls -->
+  {% if pagination.pages > 1 %}
+  <div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Stories pagination">
+      <ul class="pagination">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('author.browse_stories', page=pagination.page-1, search=request.args.get('search'), status=request.args.get('status'), category=request.args.get('category')) }}" tabindex="-1">Previous</a>
+        </li>
+        
+        {% for page_num in range(1, pagination.pages + 1) %}
+          <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('author.browse_stories', page=page_num, search=request.args.get('search'), status=request.args.get('status'), category=request.args.get('category')) }}">{{ page_num }}</a>
+          </li>
+        {% endfor %}
+        
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('author.browse_stories', page=pagination.page+1, search=request.args.get('search'), status=request.args.get('status'), category=request.args.get('category')) }}">Next</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* Enhanced styles for the story cards */
+.story-card-enhanced {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.story-card-enhanced:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* FIXED: Image container with consistent sizing */
+.story-image-container {
+  height: 200px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+}
+
+.story-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.story-card-enhanced:hover .story-image {
+  transform: scale(1.05);
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.7));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.story-card-enhanced:hover .image-overlay {
+  opacity: 1;
+}
+
+.card-header-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 15px;
+  z-index: 2;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.story-excerpt {
+  min-height: 40px;
+}
+
+.category-badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+}
+
+.profile-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-placeholder {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.author-info {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+  margin-top: auto;
+}
+
+.story-actions .btn {
+  border-radius: 20px;
+  padding: 0.25rem 0.5rem;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+
+.story-actions .btn:hover {
+  transform: translateY(-2px);
+}
+
+.read-btn {
+  background-color: #4e73df;
+  color: white;
+  border: none;
+}
+
+.read-btn:hover {
+  background-color: #3a56c4;
+  color: white;
+}
+
+.no-stories-placeholder, .no-saved-stories {
+  padding: 3rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+/* Animation for interactions */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.like-btn.active {
+  animation: pulse 0.5s;
+}
+
+/* Filter highlight */
+.story-item.highlight {
+  animation: highlight 1.5s ease;
+}
+
+@keyframes highlight {
+  0% { background-color: transparent; }
+  30% { background-color: rgba(78, 115, 223, 0.1); }
+  100% { background-color: transparent; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .story-actions .btn span {
+    display: none;
+  }
+  
+  .story-actions .btn i {
+    margin-right: 0;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  .story-image-container {
+    height: 160px;
+  }
+}
+
+/* Ensure all cards have the same height */
+.story-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.story-card .card-body {
+  flex: 1 1 auto;
+}
+
+/* Pagination styles */
+.pagination {
+  margin-bottom: 0;
+}
+
+.page-item.active .page-link {
+  background-color: #4e73df;
+  border-color: #4e73df;
+}
+
+.page-link {
+  color: #4e73df;
+}
+
+.page-link:hover {
+  color: #2e4a7d;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize saved stories from localStorage
+  let savedStories = JSON.parse(localStorage.getItem('savedStories')) || [];
+  
+  // Update save buttons based on saved status
+  updateSaveButtons();
+  
+  // Toggle saved stories section
+  document.getElementById('toggleSavedStories').addEventListener('click', function() {
+    const savedSection = document.getElementById('savedStoriesSection');
+    const storiesGrid = document.getElementById('storiesGridView');
+    const pagination = document.querySelector('.pagination');
+    
+    if (savedSection.classList.contains('d-none')) {
+      // Show saved stories
+      savedSection.classList.remove('d-none');
+      storiesGrid.classList.add('d-none');
+      if (pagination) pagination.classList.add('d-none');
+      loadSavedStories();
+    } else {
+      // Show all stories
+      savedSection.classList.add('d-none');
+      storiesGrid.classList.remove('d-none');
+      if (pagination) pagination.classList.remove('d-none');
+    }
+  });
+  
+  // Close saved stories
+  document.getElementById('closeSavedStories').addEventListener('click', function() {
+    document.getElementById('savedStoriesSection').classList.add('d-none');
+    document.getElementById('storiesGridView').classList.remove('d-none');
+    const pagination = document.querySelector('.pagination');
+    if (pagination) pagination.classList.remove('d-none');
+  });
+  
+  // Update all save buttons based on saved status
+  function updateSaveButtons() {
+    document.querySelectorAll('.save-story-btn').forEach(btn => {
+      const storyId = btn.dataset.id;
+      if (savedStories.includes(storyId)) {
+        const icon = btn.querySelector('i');
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        btn.style.color = '#4e73df';
+      } else {
+        const icon = btn.querySelector('i');
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        btn.style.color = '';
+      }
+    });
+  }
+  
+  // Load saved stories into the saved section
+  function loadSavedStories() {
+    const savedStoriesGrid = document.getElementById('savedStoriesGrid');
+    
+    if (savedStories.length === 0) {
+      savedStoriesGrid.innerHTML = `
+        <div class="col-12 text-center py-4">
+          <div class="no-saved-stories">
+            <i class="fas fa-bookmark fa-3x mb-3 text-muted"></i>
+            <h5 class="text-muted">No saved stories yet</h5>
+            <p class="text-muted">Click the bookmark icon on any story to save it for later</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    let savedHTML = '';
+    document.querySelectorAll('.story-item').forEach(item => {
+      const storyId = item.querySelector('.save-story-btn').dataset.id;
+      if (savedStories.includes(storyId)) {
+        savedHTML += item.outerHTML;
+      }
+    });
+    
+    savedStoriesGrid.innerHTML = savedHTML || `
+      <div class="col-12 text-center py-4">
+        <div class="no-saved-stories">
+          <i class="fas fa-bookmark fa-3x mb-3 text-muted"></i>
+          <h5 class="text-muted">No saved stories found</h5>
+          <p class="text-muted">Some saved stories might have been removed</p>
+        </div>
+      </div>
+    `;
+    
+    // Reattach event listeners to the saved stories
+    attachEventListenersToSavedStories();
+  }
+  
+  // Attach event listeners to saved stories
+  function attachEventListenersToSavedStories() {
+    document.querySelectorAll('#savedStoriesGrid .save-story-btn').forEach(btn => {
+      btn.addEventListener('click', handleSaveStory);
+    });
+    
+    document.querySelectorAll('#savedStoriesGrid .like-btn').forEach(btn => {
+      btn.addEventListener('click', handleLikeStory);
+    });
+    
+    document.querySelectorAll('#savedStoriesGrid .share-btn').forEach(btn => {
+      btn.addEventListener('click', handleShareStory);
+    });
+  }
+  
+  // Like functionality with enhanced UI feedback
+  function handleLikeStory(e) {
+    e.preventDefault();
+    const id = this.dataset.id;
+    
+    // Immediate UI feedback
+    this.classList.add('active');
+    const heartIcon = this.querySelector('i');
+    if (heartIcon) {
+      heartIcon.classList.remove('far');
+      heartIcon.classList.add('fas');
+    }
+    
+    fetch(`/author/story/${id}/like`, { 
+      method: 'POST', 
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(r => r.json()).then(json => {
+        if (json.success) {
+          const span = this.querySelector('.like-count');
+          if (span) span.innerText = parseInt(span.innerText || '0') + 1;
+          this.disabled = true;
+          
+          // Show a small notification
+          showToast('Story liked!', 'success');
+        } else {
+          // Revert UI changes if failed
+          this.classList.remove('active');
+          if (heartIcon) {
+            heartIcon.classList.remove('fas');
+            heartIcon.classList.add('far');
+          }
+          showToast(json.error || 'Could not like story', 'error');
+        }
+      }).catch(err => { 
+        console.error(err); 
+        this.classList.remove('active');
+        showToast('Error liking story', 'error');
+      });
+      
+    // Remove animation class after animation completes
+    setTimeout(() => {
+      this.classList.remove('active');
+    }, 500);
+  }
+  
+  // Share functionality
+  function handleShareStory(e) {
+    e.preventDefault();
+    const id = this.dataset.id;
+    
+    fetch(`/author/story/${id}/share`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({platform: 'other'})
+    }).then(r => r.json()).then(json => {
+      if (json.success) {
+        const span = this.querySelector('.share-count');
+        if (span) span.innerText = parseInt(span.innerText || '0') + 1;
+        showToast('Story shared!', 'success');
+      } else {
+        showToast(json.error || 'Could not share story', 'error');
+      }
+    }).catch(err => { 
+      console.error(err); 
+      showToast('Error sharing story', 'error');
+    });
+  }
+  
+  // Save story functionality
+  function handleSaveStory(e) {
+    e.preventDefault();
+    const id = this.dataset.id;
+    const icon = this.querySelector('i');
+    
+    // Check if story is already saved
+    const index = savedStories.indexOf(id);
+    
+    if (index === -1) {
+      // Save the story
+      savedStories.push(id);
+      icon.classList.remove('far');
+      icon.classList.add('fas');
+      this.style.color = '#4e73df';
+      showToast('Story saved for later', 'success');
+    } else {
+      // Remove the story from saved
+      savedStories.splice(index, 1);
+      icon.classList.remove('fas');
+      icon.classList.add('far');
+      this.style.color = '';
+      showToast('Story removed from saved', 'info');
+      
+      // If we're in the saved stories view, remove this card
+      if (this.closest('#savedStoriesGrid')) {
+        this.closest('.story-item').remove();
+        // Check if we need to show the empty state
+        if (document.querySelectorAll('#savedStoriesGrid .story-item').length === 0) {
+          loadSavedStories(); // This will show the empty state
+        }
+      }
+    }
+    
+    // Update localStorage
+    localStorage.setItem('savedStories', JSON.stringify(savedStories));
+    
+    // Update all save buttons to reflect the new state
+    updateSaveButtons();
+  }
+  
+  // Attach event listeners
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', handleLikeStory);
+  });
+  
+  document.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', handleShareStory);
+  });
+  
+  document.querySelectorAll('.save-story-btn').forEach(btn => {
+    btn.addEventListener('click', handleSaveStory);
+  });
+  
+  // View story functionality (if needed)
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // This would typically be handled by the link href
+      // But we can add analytics or other tracking here if needed
+    });
+  });
+  
+  // Helper function to show toast notifications
+  function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `story-toast story-toast-${type}`;
+    toast.innerHTML = `
+      <div class="toast-content">
+        <i class="toast-icon ${getToastIcon(type)}"></i>
+        <span>${message}</span>
+      </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+  
+  function getToastIcon(type) {
+    switch(type) {
+      case 'success': return 'fas fa-check-circle';
+      case 'error': return 'fas fa-exclamation-circle';
+      case 'warning': return 'fas fa-exclamation-triangle';
+      default: return 'fas fa-info-circle';
+    }
+  }
+});
+</script>
+
+<style>
+/* Toast notification styles */
+.story-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-left: 4px solid #4e73df;
+  border-radius: 4px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  min-width: 250px;
+  display: flex;
+  align-items: center;
+}
+
+.story-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.story-toast-success {
+  border-left-color: #1cc88a;
+}
+
+.story-toast-error {
+  border-left-color: #e74a3b;
+}
+
+.story-toast-warning {
+  border-left-color: #f6c23e;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+}
+
+.toast-icon {
+  margin-right: 10px;
+}
+
+.story-toast-success .toast-icon {
+  color: #1cc88a;
+}
+
+.story-toast-error .toast-icon {
+  color: #e74a3b;
+}
+
+.story-toast-warning .toast-icon {
+  color: #f6c23e;
+}
+</style>
+{% endblock %}

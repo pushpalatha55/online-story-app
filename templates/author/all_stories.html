@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}All Stories - StoryHub{% endblock %}
+
+{% block content %}
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="hero-title animate__animated animate__fadeInDown">Discover Stories That Inspire</h1>
+            <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">Explore captivating tales from talented authors around the world</p>
+            <form class="d-flex justify-content-center animate__animated animate__fadeInUp animate__delay-1s">
+                <input type="text" class="form-control me-2" placeholder="Search stories...">
+                <button class="btn btn-light">Search</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Stories Grid -->
+    <div class="container stories-container">
+        <div class="row">
+            {% if stories %}
+                {% for story in stories %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card story-card h-100">
+                            {% if loop.index0 == 0 %}
+                                <div class="featured-badge">Featured</div>
+                            {% endif %}
+                            
+                            {% if story.featured_image %}
+                                <img src="{{ url_for('static', filename=story.featured_image) }}" class="card-img-top" alt="{{ story.title }}">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="card-img-top" alt="Default story image">
+                            {% endif %}
+                            
+                            <div style="display: inline-block; 
+                                        padding: 4px 10px; 
+                                        background-color: #f70c95; 
+                                        color: white; 
+                                        font-size: 0.8rem; 
+                                        font-weight: 600; 
+                                        border-radius: 12px; 
+                                        margin-top: 10px;
+                                        text-align: center;
+                                        width:30%; ">
+                            {{ story.category if story.category else 'Uncategorized' }}
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">{{ story.title }}</h5>
+                                <p class="card-text story-excerpt">
+                                    {{ story.content|striptags|truncate(150) }}
+                                </p>
+                                
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 1rem; font-size: 0.9rem;">
+                                    <img src="https://ui-avatars.com/api/?name={{ story.author_name }}&background=random"
+                                        alt="Author"
+                                        style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    <span style="font-weight: 600; color: #333; font-size: 0.95rem;">
+                                        By {{ story.author_name }}
+                                    </span>
+                                </div>
+                                
+                                <div class="story-stats">
+                                    <span><i class="far fa-eye me-1"></i> {{ story.views }} views</span>
+                                    <span><i class="far fa-clock me-1"></i> {{ story.publish_date|datetimeformat('%b %d, %Y') }}</span>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <a href="{{ url_for('author.view_story', story_id=story.id) if session.get('user_role') == 'author' else '#' }}" class="btn read-more-btn">
+                                        Read More <i class="fas fa-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-book fa-3x text-muted mb-3 animate-float"></i>
+                    <h3>No stories published yet</h3>
+                    <p class="text-muted">Check back later for inspiring content from our authors.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

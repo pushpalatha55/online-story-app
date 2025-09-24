@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1 text-gradient-primary">Performance Analytics</h1>
+                    <p class="text-muted">Track your story performance and audience engagement</p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-calendar me-2"></i>Last 30 Days
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                        <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                        <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                        <li><a class="dropdown-item" href="#">This Year</a></li>
+                    </ul>
+                    <a href="{{ url_for('author.my_stories') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Stories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-lg h-100 dashboard-card gradient-card-primary animate_animated animate_fadeInLeft rounded-lg">
+                <div class="card-body text-center text-white bg-primary">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-eye fa-3x"></i>
+                    </div>
+                    <h2 class="display-4 fw-bold mb-1" id="total-views">{{ stats.total_views|default(0) }}</h2>
+                    <p class="mb-0">Total Views</p>
+                    <small>Across all stories</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-lg h-100 dashboard-card gradient-card-success animate_animated animatefadeInLeft animate_delay-1s">
+                <div class="card-body text-center text-white bg-danger">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-heart fa-3x"></i>
+                    </div>
+                    <h2 class="display-4 fw-bold mb-1" id="total-likes">{{ stats.total_likes|default(0) }}</h2>
+                    <p class="mb-0">Total Likes</p>
+                    <small>Reader appreciation</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-lg h-100 dashboard-card gradient-card-warning animate_animated animatefadeInLeft animate_delay-2s">
+                <div class="card-body text-center text-white bg-warning">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-comment fa-3x"></i>
+                    </div>
+                    <h2 class="display-4 fw-bold mb-1" id="total-comments">{{ stats.total_comments|default(0) }}</h2>
+                    <p class="mb-0">Total Comments</p>
+                    <small>Reader engagement</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-lg h-100 dashboard-card gradient-card-info animate_animated animatefadeInLeft animate_delay-3s">
+                <div class="card-body text-center text-white bg-success">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-share-alt fa-3x"></i>
+                    </div>
+                    <h2 class="display-4 fw-bold mb-1" id="total-shares">{{ stats.total_shares|default(0) }}</h2>
+                    <p class="mb-0">Total Shares</p>
+                    <small>Social reach</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Graphs Section -->
+    <div class="row mb-4">
+        <!-- Engagement Chart -->
+        <div class="col-xl-8 mb-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line me-2"></i>Engagement Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="engagementChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performing Stories -->
+        <div class="col-xl-4 mb-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-trophy me-2"></i>Top Performing Stories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for story in top_stories[:5] %}
+                        <div class="list-group-item border-0 px-0 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <span class="text-primary fw-bold">{{ loop.index }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1 text-truncate">{{ story.title }}</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">{{ story.views }} views</small>
+                                        <span class="badge bg-{{ 'success' if story.status == 'published' else 'warning' if story.status == 'scheduled' else 'info' }}">
+                                            {{ story.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No performance data available yet</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="row mb-4">
+        <!-- Audience Demographics -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users me-2"></i>Stories By Category
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Engagement Metrics -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-pie me-2"></i>Engagement Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="h3 text-primary mb-1" id="avg-time">{{ metrics.avg_time }}m</div>
+                            <small class="text-muted">Avg. Time</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h3 text-success mb-1" id="completion-rate">{{ metrics.completion_rate }}%</div>
+                            <small class="text-muted">Completion</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h3 text-info mb-1" id="bounce-rate">{{ metrics.bounce_rate }}%</div>
+                            <small class="text-muted">Bounce Rate</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mt-3">
+                        <h6 class="text-muted mb-3">Engagement Score</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ metrics.engagement_score }}%" 
+                                 aria-valuenow="{{ metrics.engagement_score }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                <span class="fw-bold">{{ metrics.engagement_score }}%</span>
+                            </div>
+                        </div>
+                        <small class="text-muted">Based on views, likes, comments, and shares</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stories Performance Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-table me-2"></i>All Stories Performance
+                    </h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-sort me-1"></i>Sort By
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="views">Most Views</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="likes">Most Likes</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="comments">Most Comments</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="shares">Most Shares</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="recent">Most Recent</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="performanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Story Title</th>
+                                    <th>Status</th>
+                                    <th>Views</th>
+                                    <th>Likes</th>
+                                    <th>Comments</th>
+                                    <th>Shares</th>
+                                    <th>Engagement</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for story in stories %}
+                                <tr data-views="{{ story.views }}" data-likes="{{ story.likes }}" data-comments="{{ story.comments }}" data-shares="{{ story.shares }}" data-created="{{ story.created_at.timestamp() if story.created_at else 0 }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if story.featured_image %}
+                                            <img src="{{ url_for('static', filename=story.featured_image) }}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;" alt="{{ story.title }}">
+                                            {% else %}
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-book text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ story.title }}</h6>
+                                                <small class="text-muted">{{ story.created_at.strftime('%b %d, %Y') if story.created_at }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if story.status == 'published' else 'warning' if story.status == 'scheduled' else 'info' }}">
+                                            {{ story.status }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold">{{ story.views }}</td>
+                                    <td>{{ story.likes }}</td>
+                                    <td>{{ story.comments }}</td>
+                                    <td>{{ story.shares }}</td>
+                                    <td>
+                                        {% set engagement = ((story.views * 0.4) + (story.likes * 0.3) + (story.comments * 0.2) + (story.shares * 0.1)) | round %}
+                                        <div class="progress" style="height: 6px; width: 80px;">
+                                            <div class="progress-bar bg-{{ 'success' if engagement > 70 else 'warning' if engagement > 40 else 'danger' }}" 
+                                                 role="progressbar" style="width: {{ engagement }}%" 
+                                                 aria-valuenow="{{ engagement }}" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small>{{ engagement }}%</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('author.view_story', story_id=story.id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('author.edit_story', story_id=story.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">No stories available for performance tracking</p>
+                                        <a href="{{ url_for('author.create_story') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>Create Your First Story
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.text-gradient-primary {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-card-primary { background: var(--primary-gradient); }
+.gradient-card-success { background: var(--success-gradient); }
+.gradient-card-warning { background: var(--warning-gradient); }
+.gradient-card-info { background: var(--info-gradient); }
+
+.dashboard-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.stats-icon {
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .stats-icon {
+    transform: scale(1.1);
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.table-hover tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+}
+
+/* Animation delays */
+.animate__delay-1s { animation-delay: 0.1s; }
+.animate__delay-2s { animation-delay: 0.2s; }
+.animate__delay-3s { animation-delay: 0.3s; }
+
+/* Custom scrollbar for table */
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Hover effects */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .stats-icon i {
+        font-size: 2rem !important;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<!-- Add Chart.js for graphs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // ✅ Engagement Overview (dynamic from backend)
+    const engagementData = {
+        labels: ['Views', 'Likes', 'Comments', 'Shares'],
+        datasets: [{
+            label: 'Total Engagement',
+            data: [
+                {{ stats.total_views|default(0) }},
+                {{ stats.total_likes|default(0) }},
+                {{ stats.total_comments|default(0) }},
+                {{ stats.total_shares|default(0) }}
+            ],
+            backgroundColor: [
+                '#667eea',
+                '#4facfe',
+                '#fa709a',
+                '#00c9a7'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    // ✅ Stories by Category Chart (dynamic from backend)
+    const categoryData = {
+        labels: [
+            {% for category in category_data %}
+                '{{ category.category }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for category in category_data %}
+                    {{ category.count }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                '#667eea',
+                '#4facfe',
+                '#00f2fe',
+                '#fa709a',
+                '#fee140',
+                '#00c9a7',
+                '#a8edea',
+                '#fed6e3',
+                '#764ba2',
+                '#4facfe'
+            ]
+        }]
+    };
+
+    // ✅ Engagement Overview Chart
+    const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+    new Chart(engagementCtx, {
+        type: 'bar',
+        data: engagementData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Engagement Overview (Views, Likes, Comments, Shares)'
+                }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // ✅ Stories by Category Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: categoryData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Stories by Category' }
+            }
+        }
+    });
+
+    // Table sorting functionality
+    const sortOptions = document.querySelectorAll('.sort-option');
+    const tableBody = document.querySelector('#performanceTable tbody');
+    const tableRows = Array.from(tableBody.querySelectorAll('tr'));
+
+    sortOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sortBy = this.getAttribute('data-sort');
+            
+            // Remove active class from all options
+            sortOptions.forEach(opt => opt.classList.remove('active'));
+            // Add active class to current option
+            this.classList.add('active');
+            
+            // Sort rows
+            tableRows.sort((a, b) => {
+                let aValue, bValue;
+                
+                switch(sortBy) {
+                    case 'views':
+                    case 'likes':
+                    case 'comments':
+                    case 'shares':
+                        aValue = parseInt(a.getAttribute(`data-${sortBy}`));
+                        bValue = parseInt(b.getAttribute(`data-${sortBy}`));
+                        return bValue - aValue; // Descending order
+                    case 'recent':
+                        aValue = parseFloat(a.getAttribute('data-created'));
+                        bValue = parseFloat(b.getAttribute('data-created'));
+                        return bValue - aValue; // Descending order (newest first)
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Remove existing rows
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+            
+            // Add sorted rows
+            tableRows.forEach(row => tableBody.appendChild(row));
+        });
+    });
+
+    // Animate counter values
+    function animateValue(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Animate the summary numbers
+    const totalViews = document.getElementById('total-views');
+    const totalLikes = document.getElementById('total-likes');
+    const totalComments = document.getElementById('total-comments');
+    const totalShares = document.getElementById('total-shares');
+
+    if (totalViews) animateValue(totalViews, 0, parseInt(totalViews.textContent), 2000);
+    if (totalLikes) animateValue(totalLikes, 0, parseInt(totalLikes.textContent), 2000);
+    if (totalComments) animateValue(totalComments, 0, parseInt(totalComments.textContent), 2000);
+    if (totalShares) animateValue(totalShares, 0, parseInt(totalShares.textContent), 2000);
+
+    // Add interactive elements
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+        });
+    });
+});
+</script>
+{% endblock %}

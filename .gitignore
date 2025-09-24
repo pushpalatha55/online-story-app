@@ -1,0 +1,51 @@
+# -----------------------
+# Python
+# -----------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+
+# -----------------------
+# Virtual Environments
+# -----------------------
+venv/
+env/
+ENV/
+.venv/
+
+# -----------------------
+# Flask & Django specific
+# -----------------------
+instance/
+*.sqlite3
+*.db
+
+# -----------------------
+# Uploads and media files
+# -----------------------
+# Ignore uploaded images if you don't want to push them
+static/uploads/
+
+# -----------------------
+# OS Files
+# -----------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -----------------------
+# IDE / Editor files
+# -----------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# -----------------------
+# Logs
+# -----------------------
+*.log

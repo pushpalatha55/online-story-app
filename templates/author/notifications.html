@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Author Notifications{% endblock %}
+
+{% block styles %}
+<style>
+    /* Animation styles */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+    
+    .notification-card {
+        animation: fadeIn 0.5s ease forwards;
+        opacity: 0;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .notification-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .notification-card.unread {
+        border-left-color: #0d6efd;
+        background-color: #f8f9fa;
+    }
+    
+    .badge {
+        transition: all 0.3s ease;
+    }
+    
+    .alert-info {
+        animation: pulse 2s infinite;
+    }
+    
+    .message-form {
+        animation: fadeIn 0.7s ease 0.3s forwards;
+        opacity: 0;
+    }
+    
+    /* Stagger animations for notification cards */
+    .notification-card:nth-child(1) { animation-delay: 0.1s; }
+    .notification-card:nth-child(2) { animation-delay: 0.2s; }
+    .notification-card:nth-child(3) { animation-delay: 0.3s; }
+    .notification-card:nth-child(4) { animation-delay: 0.4s; }
+    .notification-card:nth-child(5) { animation-delay: 0.5s; }
+    .notification-card:nth-child(n+6) { animation-delay: 0.6s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 animate__animated animate__fadeIn">Your Notifications</h2>
+
+    {% if unread_count > 0 %}
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            You have <strong>{{ unread_count }}</strong> unread notification{{ 's' if unread_count > 1 }}.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="notifications-container">
+        {% for n in notifications %}
+            <div class="card mb-3 notification-card {{ 'unread' if not n.is_read }}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if n.type == 'system' %}
+                            <span class="badge bg-info"><i class="fas fa-cog me-1"></i> System</span>
+                        {% elif n.type == 'role_change' %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-user-tag me-1"></i> Role Change</span>
+                        {% elif n.type == 'message' %}
+                            <span class="badge bg-success"><i class="fas fa-paper-plane me-1"></i> Sent to Admin</span>
+                        {% elif n.type == 'reply' %}
+                            <span class="badge bg-primary"><i class="fas fa-reply me-1"></i> Admin Reply</span>
+                        {% endif %}
+                        <span class="ms-2">From: {{ n.sender_name or 'System' }}</span>
+                    </div>
+                    <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ n.message }}</p>
+                    {% if n.type in ['message', 'reply'] %}
+                        <small class="status-badge mt-2 d-inline-block badge bg-secondary">Status: {{ n.status|capitalize }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-secondary text-center py-4 animate__animated animate__fadeIn">
+                <i class="fas fa-bell-slash fa-2x mb-3"></i>
+                <p class="mb-0">No notifications found.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Form to send message to admin -->
+    <div class="card mt-4 message-form">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Send a Message to Admin</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('author.notify_admin') }}" method="POST" id="adminMessageForm">
+                <div class="mb-3">
+                    <textarea class="form-control" name="message" rows="4" placeholder="Type your message here..." required></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane me-1"></i> Send Message
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation to the send button
+        const sendBtn = document.getElementById('sendMessageBtn');
+        if (sendBtn) {
+            sendBtn.addEventListener('mouseenter', function() {
+                this.classList.add('animate__animated', 'animate__pulse');
+            });
+            
+            sendBtn.addEventListener('mouseleave', function() {
+                this.classList.remove('animate__animated', 'animate__pulse');
+            });
+            
+            // Form submission handling
+            document.getElementById('adminMessageForm').addEventListener('submit', function() {
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Sending...';
+                sendBtn.disabled = true;
+            });
+        }
+        
+        // Mark notifications as read when viewed
+        const notificationCards = document.querySelectorAll('.notification-card.unread');
+        notificationCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.remove('unread');
+                // Here you could add an AJAX call to mark the notification as read in the backend
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    .container.mt-5 {
+        font-family: 'Times New Roman', Times, serif;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-weight: 700;
+        position: relative;
+        padding-bottom: 15px;
+        animation: slideInFromTop 0.8s ease-out;
+    }
+    
+    h2:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        border-radius: 2px;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 25px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%);
+        color: white;
+    }
+    
+    .alert-success {
+        background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%);
+        color: white;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+        animation: fadeIn 1s ease-out;
+    }
+    
+    .form-control, .form-select, .form-check-input {
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 2px solid #eef2f7;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        animation: fadeIn 1.2s ease-out;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #6a11cb;
+        box-shadow: 0 5px 15px rgba(106, 17, 203, 0.1);
+    }
+    
+    .form-check-inline {
+        margin-right: 20px;
+        animation: fadeIn 1.4s ease-out;
+    }
+    
+    .form-check-input {
+        width: 22px;
+        height: 22px;
+        margin-top: 0;
+        margin-right: 8px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #6a11cb;
+        border-color: #6a11cb;
+    }
+    
+    .img-thumbnail {
+        border-radius: 15px;
+        padding: 5px;
+        background: white;
+        border: 2px solid #eef2f7;
+        transition: all 0.3s ease;
+        animation: fadeIn 1.6s ease-out;
+    }
+    
+    .img-thumbnail:hover {
+        transform: scale(1.05);
+        border-color: #6a11cb;
+    }
+    
+    .btn {
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        animation: fadeIn 1.8s ease-out;
+    }
+    
+    .btn-success {
+        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        border: none;
+        box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+    }
+    
+    .btn-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(106, 17, 203, 0.3);
+        background: linear-gradient(90deg, #5a0db9 0%, #1c67e3 100%);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(90deg, #8e9eab 0%, #eef2f3 100%);
+        border: none;
+        color: #2c3e50;
+        box-shadow: 0 5px 15px rgba(142, 158, 171, 0.2);
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(142, 158, 171, 0.3);
+        background: linear-gradient(90deg, #7d8d9b 0%, #dce2e4 100%);
+        color: #2c3e50;
+    }
+    
+    .row {
+        animation: fadeIn 1.6s ease-out;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInFromTop {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container.mt-5 {
+            margin: 20px;
+            padding: 20px;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .form-check-inline {
+            display: block;
+            margin-bottom: 10px;
+        }
+    }
+    
+    /* Custom file upload button */
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    
+    .upload-btn-wrapper .btn-upload {
+        border: 2px solid #6a11cb;
+        color: #6a11cb;
+        background-color: white;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-btn-wrapper .btn-upload:hover {
+        background-color: #6a11cb;
+        color: white;
+    }
+    
+    .upload-btn-wrapper input[type=file] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    /* Loading animation for selects */
+    .loading {
+        position: relative;
+    }
+    
+    .loading:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        width: 20px;
+        height: 20px;
+        margin-top: -10px;
+        border: 3px solid rgba(106, 17, 203, 0.2);
+        border-radius: 50%;
+        border-top-color: #6a11cb;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="container mt-5">
+  <h2>Edit Account</h2>
+
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('auth.edit_account') }}" enctype="multipart/form-data">
+    <!-- Username -->
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+    </div>
+
+    <!-- Phone -->
+    <div class="mb-3">
+      <label class="form-label">Phone</label>
+      <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}">
+    </div>
+
+    <!-- Gender -->
+    <div class="mb-3">
+      <label class="form-label">Gender</label>
+      <select name="gender" class="form-select">
+        <option value="">-- Select --</option>
+        <option value="Male" {% if user.gender == "Male" %}selected{% endif %}>Male</option>
+        <option value="Female" {% if user.gender == "Female" %}selected{% endif %}>Female</option>
+        <option value="Other" {% if user.gender == "Other" %}selected{% endif %}>Other</option>
+      </select>
+    </div>
+
+    <!-- Roles -->
+    <div class="mb-3">
+      <label class="form-label">Roles</label><br>
+      {% set roles_value = (user.roles or '').split(',') %}
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" name="roles" value="reader"
+          {% if "reader" in roles_value %}checked{% endif %}>
+        <label class="form-check-label">Reader</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" name="roles" value="author"
+          {% if "author" in roles_value %}checked{% endif %}>
+        <label class="form-check-label">Author</label>
+      </div>
+      {% if user.role == "admin" %}
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" name="roles" value="admin"
+          {% if "admin" in roles_value %}checked{% endif %}>
+        <label class="form-check-label">Admin</label>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Profile Picture -->
+    <div class="mb-3">
+      <label class="form-label">Profile Picture</label><br>
+      {% if user.profile_pic %}
+        <img src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) }}" 
+             alt="Profile Picture" class="img-thumbnail mb-2" width="120">
+      {% endif %}
+      <div class="upload-btn-wrapper">
+        <button class="btn-upload">Choose New Image</button>
+        <input type="file" name="profile_pic" accept="image/*">
+      </div>
+    </div>
+
+    <!-- Country / State / City -->
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Country</label>
+        <select id="country" name="country" class="form-select">
+          <option value="">Select Country</option>
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">State</label>
+        <select id="state" name="state" class="form-select">
+          <option value="">Select State</option>
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">City</label>
+        <select id="city" name="city" class="form-select">
+          <option value="">Select City</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<!-- Country/state/city script -->
+<!-- Country/state/city script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const countrySelect = document.getElementById("country");
+  const stateSelect = document.getElementById("state");
+  const citySelect = document.getElementById("city");
+
+  const currentCountry = "{{ user.country or '' }}";
+  const currentState = "{{ user.state or '' }}";
+  const currentCity = "{{ user.city or '' }}";
+
+  // Add loading state to selects
+  function setLoading(select, isLoading) {
+    if (isLoading) {
+      select.classList.add('loading');
+      select.disabled = true;
+    } else {
+      select.classList.remove('loading');
+      select.disabled = false;
+    }
+  }
+
+  // Load countries
+  setLoading(countrySelect, true);
+  fetch("/auth/api/countries").then(r => r.json()).then(data => {
+    data.forEach(c => {
+      let opt = document.createElement("option");
+      opt.value = c.iso2;   // ✅ Use ISO2 as value
+      opt.text = c.name;
+      if (c.name === currentCountry || c.iso2 === currentCountry) opt.selected = true;
+      countrySelect.add(opt);
+    });
+    setLoading(countrySelect, false);
+
+    // Trigger state load if editing existing user
+    if (currentCountry) countrySelect.dispatchEvent(new Event("change"));
+  });
+
+  countrySelect.addEventListener("change", function () {
+    stateSelect.innerHTML = '<option value="">Select State</option>';
+    citySelect.innerHTML = '<option value="">Select City</option>';
+    if (!this.value) return;
+
+    setLoading(stateSelect, true);
+    fetch(`/auth/api/states/${this.value}`).then(r => r.json()).then(data => {
+      data.forEach(s => {
+        let opt = document.createElement("option");
+        opt.value = s.iso2;   // ✅ Use ISO2
+        opt.text = s.name;
+        if (s.name === currentState || s.iso2 === currentState) opt.selected = true;
+        stateSelect.add(opt);
+      });
+      setLoading(stateSelect, false);
+
+      if (currentState) stateSelect.dispatchEvent(new Event("change"));
+    });
+  });
+
+  stateSelect.addEventListener("change", function () {
+    citySelect.innerHTML = '<option value="">Select City</option>';
+    if (!this.value) return;
+
+    setLoading(citySelect, true);
+    const countryCode = countrySelect.value;
+    const stateCode = stateSelect.value;
+
+    fetch(`/auth/api/cities/${countryCode}/${stateCode}`)
+      .then(r => r.json())
+      .then(data => {
+        data.forEach(c => {
+          let opt = document.createElement("option");
+          opt.value = c.name;   
+          opt.text = c.name;
+          if (c.name === currentCity) opt.selected = true;
+          citySelect.add(opt);
+        });
+        setLoading(citySelect, false);
+      });
+  });
+});
+</script>
+
+{% endblock %}

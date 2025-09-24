@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-book-open me-2"></i>Story Management</h2>
+        <div class="d-flex">
+            <button class="btn btn-outline-secondary me-2" id="toggleFilters">
+                <i class="fas fa-filter me-1"></i> Filters
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                    <li><a class="dropdown-item" href="{{ url_for('admin.export_stories_csv') }}">CSV</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('admin.export_stories_pdf') }}">PDF</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('admin.export_stories_csv') }}">Excel</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card mb-4" id="filtersCard">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Filter Stories</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="searchInput" class="form-label">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" name="search" class="form-control" placeholder="Search titles, content or authors..."
+                               value="{{ request.args.get('search', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="statusSelect" class="form-label">Status</label>
+                    <select id="statusSelect" name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="published" {% if request.args.get('status') == 'published' %}selected{% endif %}>Published</option>
+                        <option value="draft" {% if request.args.get('status') == 'draft' %}selected{% endif %}>Draft</option>
+                        <option value="scheduled" {% if request.args.get('status') == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="categorySelect" class="form-label">Category</label>
+                    <select id="categorySelect" name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">Showing {{ stories|length }} of {{ pagination.total }} stories</p>
+        <div class="d-flex align-items-center">
+            <span class="me-2 text-muted">View:</span>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary active" id="gridViewBtn"><i class="fas fa-th"></i></button>
+                <button type="button" class="btn btn-outline-secondary" id="listViewBtn"><i class="fas fa-list"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stories Grid -->
+    <div class="row" id="storiesGridView">
+        {% for story in stories %}
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+            <div class="card story-card h-100 border-0 shadow-sm hover-shadow">
+                <img src="{{ url_for('static', filename=story.featured_image) }}" class="card-img-top" alt="{{ story.title }}" style="height:180px; object-fit:cover;">
+
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="badge {% if story.status == 'published' %}bg-success{% elif story.status == 'draft' %}bg-warning{% else %}bg-info{% endif %}">
+                        {{ story.status|title }}
+                    </span>
+                    <div class="dropdown position-relative">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="storyActions{{ story.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="storyActions{{ story.id }}">
+                            <li><a class="dropdown-item preview-btn" href="#" data-id="{{ story.id }}"><i class="fas fa-eye me-2"></i>Preview</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger delete-btn" href="#" data-id="{{ story.id }}"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-truncate" 
+                        style="color:rgb(234, 10, 144);
+                            font-weight:bold;
+                            letter-spacing:1px;
+                            text-transform:uppercase;">
+                    {{ story.title }}
+                    </h5>
+                    <p class="card-text small" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ story.content }}</p>
+
+                    <div class="mb-2">
+                        <span class="badge bg-secondary">{{ story.category|title }}</span>
+                    </div>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center">
+                                {% if story.author_profile_pic %}
+                                    <img 
+                                        src="{{ url_for('static', filename='uploads/' ~ story.author_profile_pic) }}" 
+                                        class="profile-img me-2" 
+                                        alt="{{ story.author_name }}"
+                                        style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                                {% endif %}
+                                <p class="mb-0 small text-muted"><i class="fas fa-user me-1"></i> {{ story.author_name }}</p>
+                            </div>
+                            <p class="mb-0 small text-muted"><i class="fas fa-envelope me-1"></i> {{ story.author_email }}</p>
+                        </div>
+                        <div class="ms-2">
+                            <form method="post" action="#" class="d-inline">
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ story.created_at.strftime('%b %d, %Y') }}</small>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary preview-btn" data-id="{{ story.id }}">View</button>
+                            <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ story.id }}">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No stories found</h4>
+                <p class="text-muted">Try adjusting your filters to find what you're looking for.</p>
+                <a href="{{ url_for('admin.browse_stories') }}" class="btn btn-primary mt-2">Clear Filters</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Stories List View -->
+    <div class="d-none" id="storiesListView">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Image</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for story in stories %}
+                            <tr>
+                                <td style="width:80px;">
+                                    <img src="{{ url_for('static', filename=story.featured_image) }}" alt="{{ story.title }}" class="img-fluid rounded" style="height:60px; width:80px; object-fit:cover;">
+                                </td>
+                                <td>
+                                    <h6 class="mb-0">{{ story.title }}</h6>
+                                    <small class="text-muted">{{ story.content[:50] }}...</small>
+                                </td>
+                                <td>
+                                    <p class="mb-0">{{ story.author_name }}</p>
+                                    <small class="text-muted">{{ story.author_email }}</small>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ story.category|title }}</span></td>
+                                <td><span class="badge {% if story.status == 'published' %}bg-success{% elif story.status == 'draft' %}bg-warning{% else %}bg-info{% endif %}">{{ story.status|title }}</span></td>
+                                <td>{{ story.created_at.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary preview-btn" data-id="{{ story.id }}">View</button>
+                                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ story.id }}">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">No stories found</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Story pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ pagination.prev_num }}&search={{ request.args.get('search','') }}&status={{ request.args.get('status','') }}&category={{ request.args.get('category','') }}">
+                    <i class="fas fa-chevron-left me-1"></i> Previous
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-left me-1"></i> Previous</span>
+            </li>
+            {% endif %}
+
+            {% for p in range(1, pagination.pages + 1) %}
+                {% if p >= pagination.page - 2 and p <= pagination.page + 2 %}
+                <li class="page-item {% if pagination.page == p %}active{% endif %}">
+                    <a class="page-link" href="?page={{ p }}&search={{ request.args.get('search','') }}&status={{ request.args.get('status','') }}&category={{ request.args.get('category','') }}">{{ p }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ pagination.next_num }}&search={{ request.args.get('search','') }}&status={{ request.args.get('status','') }}&category={{ request.args.get('category','') }}">
+                    Next <i class="fas fa-chevron-right ms-1"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next <i class="fas fa-chevron-right ms-1"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="storyPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Story Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <img id="previewImage" class="img-fluid rounded mb-3" alt="" style="max-height:360px; width:100%; object-fit:cover;">
+        <h4 id="previewTitle"></h4>
+        <div class="mb-3">
+            <span class="badge bg-secondary" id="previewCategory"></span>
+            <span class="badge ms-2" id="previewStatus"></span>
+        </div>
+        <p id="previewContent" class="mb-3"></p>
+        <div class="mt-3 text-muted small" id="previewMeta"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this story? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle filters visibility
+    const toggleFiltersBtn = document.getElementById('toggleFilters');
+    const filtersCard = document.getElementById('filtersCard');
+    
+    if (toggleFiltersBtn && filtersCard) {
+        toggleFiltersBtn.addEventListener('click', function() {
+            filtersCard.classList.toggle('d-none');
+            const icon = this.querySelector('i');
+            if (filtersCard.classList.contains('d-none')) {
+                icon.className = 'fas fa-filter me-1';
+            } else {
+                icon.className = 'fas fa-times me-1';
+            }
+        });
+    }
+
+    // View toggles
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const storiesGridView = document.getElementById('storiesGridView');
+    const storiesListView = document.getElementById('storiesListView');
+    
+    if (gridViewBtn && listViewBtn && storiesGridView && storiesListView) {
+        gridViewBtn.addEventListener('click', function() {
+            storiesGridView.classList.remove('d-none');
+            storiesListView.classList.add('d-none');
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            storiesGridView.classList.add('d-none');
+            storiesListView.classList.remove('d-none');
+            gridViewBtn.classList.remove('active');
+            listViewBtn.classList.add('active');
+        });
+    }
+
+    // Hover effects
+    const storyCards = document.querySelectorAll('.story-card');
+    storyCards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.classList.add('shadow-lg');
+            card.style.transform = 'translateY(-5px)';
+            card.style.transition = 'all 0.3s ease';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.classList.remove('shadow-lg');
+            card.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Store the current story ID to delete
+    let currentDeleteId = null;
+    
+    // Delete Confirmation Modal
+    const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (currentDeleteId) {
+                deleteStory(currentDeleteId);
+            }
+            deleteConfirmModal.hide();
+        });
+    }
+
+    // PREVIEW handler
+    function attachPreviewHandlers() {
+        document.querySelectorAll('.preview-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                if (!id) return;
+                
+                previewStory(id);
+            });
+        });
+    }
+
+    function previewStory(id) {
+        // In a real application, you would fetch this from the server
+        // For demonstration, we'll use the data from the page
+        
+        const storyElement = document.querySelector(`[data-id="${id}"]`);
+        if (!storyElement) return;
+        
+        // Find the story card
+        const card = storyElement.closest('.card') || storyElement.closest('tr');
+        if (!card) return;
+        
+        // Extract data from the card
+        const title = card.querySelector('.card-title') || card.querySelector('h6');
+        const content = card.querySelector('.card-text') || card.querySelector('small');
+        const category = card.querySelector('.bg-secondary');
+        const status = card.querySelector('.badge:not(.bg-secondary)');
+        const image = card.querySelector('img');
+        const authorName = card.querySelector('[class*="fa-user"]') ? 
+            card.querySelector('[class*="fa-user"]').parentNode.textContent.trim() : '';
+        const authorEmail = card.querySelector('[class*="fa-envelope"]') ? 
+            card.querySelector('[class*="fa-envelope"]').parentNode.textContent.trim() : '';
+        const date = card.querySelector('.text-muted:not(small)') || 
+                    card.querySelector('td:nth-child(6)');
+        
+        // Set modal content
+        document.getElementById('previewTitle').textContent = title ? title.textContent : '';
+        document.getElementById('previewContent').textContent = content ? content.textContent : '';
+        document.getElementById('previewCategory').textContent = category ? category.textContent : '';
+        document.getElementById('previewStatus').textContent = status ? status.textContent : '';
+        document.getElementById('previewStatus').className = 'badge ' + status.className;
+        
+        if (image) {
+            document.getElementById('previewImage').src = image.src;
+            document.getElementById('previewImage').style.display = 'block';
+        } else {
+            document.getElementById('previewImage').style.display = 'none';
+        }
+        
+        document.getElementById('previewMeta').innerHTML = `
+            <div><i class="fas fa-user me-1"></i> ${authorName}</div>
+            <div><i class="fas fa-envelope me-1"></i> ${authorEmail}</div>
+            <div><i class="fas fa-calendar me-1"></i> ${date ? date.textContent : ''}</div>
+        `;
+        
+        // Show the modal
+        const previewModal = new bootstrap.Modal(document.getElementById('storyPreviewModal'));
+        previewModal.show();
+    }
+
+    // DELETE handler
+    function attachDeleteHandlers() {
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                if (!id) return;
+                
+                currentDeleteId = id;
+                deleteConfirmModal.show();
+            });
+        });
+    }
+
+    function deleteStory(id) {
+        // In a real application, you would send a request to the server
+        console.log(`Deleting story with ID: ${id}`);
+        
+        // Simulate API call
+        setTimeout(() => {
+            // Find and remove the story element
+            const storyElement = document.querySelector(`[data-id="${id}"]`);
+            if (storyElement) {
+                const card = storyElement.closest('.col-xl-3') || storyElement.closest('tr');
+                if (card) {
+                    card.remove();
+                    
+                    // Show message if no stories left
+                    if (document.querySelectorAll('.story-card, tbody tr').length === 0) {
+                        const noStoriesHTML = `
+                            <div class="col-12">
+                                <div class="text-center py-5">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <h4 class="text-muted">No stories found</h4>
+                                    <p class="text-muted">Try adjusting your filters to find what you're looking for.</p>
+                                    <a href="{{ url_for('admin.browse_stories') }}" class="btn btn-primary mt-2">Clear Filters</a>
+                                </div>
+                            </div>
+                        `;
+                        
+                        if (document.getElementById('storiesGridView').classList.contains('d-none')) {
+                            document.querySelector('tbody').innerHTML = `
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                        <p class="text-muted mb-0">No stories found</p>
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            document.getElementById('storiesGridView').innerHTML = noStoriesHTML;
+                        }
+                    }
+                }
+            }
+        }, 500);
+    }
+
+    // Initialize handlers
+    attachPreviewHandlers();
+    attachDeleteHandlers();
+
+    // Subscribe button (if needed)
+    document.querySelectorAll('.subscribe-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const storyId = this.dataset.storyId;
+            this.classList.toggle('btn-success');
+            this.classList.toggle('btn-primary');
+            
+            if (this.classList.contains('btn-success')) {
+                this.innerHTML = '<i class="fas fa-bell me-1"></i> Subscribed';
+            } else {
+                this.innerHTML = '<i class="fas fa-bell me-1"></i> Subscribe';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

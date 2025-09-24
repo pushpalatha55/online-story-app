@@ -1,0 +1,713 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4 animate-fade-in">📊 Admin Dashboard</h2>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <a href="#traffic" class="text-decoration-none">
+            <div class="stats-card card p-3 bg-primary text-white animate-slide-in-left" data-delay="0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="count-up" data-target="{{ stats.total_views or 0 }}">0</h5>
+                        <p>Total Views</p>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-eye fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 70%"></div>
+                </div>
+            </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#traffic" class="text-decoration-none">
+            <div class="stats-card card p-3 bg-success text-white animate-slide-in-left" data-delay="100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="count-up" data-target="{{ stats.total_likes or 0 }}">0</h5>
+                        <p>Total Likes</p>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-heart fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 60%"></div>
+                </div>
+            </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#traffic" class="text-decoration-none">
+            <div class="stats-card card p-3 bg-info text-white animate-slide-in-left" data-delay="200">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="count-up" data-target="{{ stats.total_comments or 0 }}">0</h5>
+                        <p>Total Comments</p>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-comments fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar bg-gray" role="progressbar" style="width: 40%"></div>
+                </div>
+            </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="#traffic" class="text-decoration-none">
+            <div class="stats-card card p-3 bg-warning text-dark animate-slide-in-left" data-delay="300">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5><span class="count-up" data-target="{{ stats.avg_engagement }}">0</span>%</h5>
+                        <p>Engagement Rate</p>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar bg-dark" role="progressbar" style="width: {{ stats.avg_engagement }}%"></div>
+                </div>
+            </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Traffic Overview -->
+    <div class="card mb-4 animate-fade-in" data-delay="400" id="traffic">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Traffic Overview</h5>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="trafficDropdown" data-bs-toggle="dropdown">
+                    Last 7 Days
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                    <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                    <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            <canvas id="trafficChart" height="120"></canvas>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3 animate-slide-in-left" data-delay="500">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Content Distribution</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="contentChartToggle">Toggle View</button>
+                </div>
+                {% if content_labels and content_counts and content_labels|length > 0 %}
+                <canvas id="contentChart" height="200"></canvas>
+                {% else %}
+                <div class="text-center p-4 text-muted">
+                    <i class="fas fa-chart-pie fa-3x mb-2"></i>
+                    <p>No content data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3 animate-slide-in-right" data-delay="500">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Gender Distribution</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="genderChartToggle">Toggle View</button>
+                </div>
+                {% if gender_labels and gender_counts and gender_labels|length > 0 %}
+                <canvas id="genderChart" height="200"></canvas>
+                {% else %}
+                <div class="text-center p-4 text-muted">
+                    <i class="fas fa-user fa-3x mb-2"></i>
+                    <p>No gender data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Locations -->
+    <div class="card mb-4 p-3 animate-fade-in" data-delay="600">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">🌍 Top Locations</h5>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#locationsList">
+                Show List
+            </button>
+        </div>
+        <div id="locationsList" class="collapse">
+            {% if top_locations and top_locations|length > 0 %}
+            <ul class="list-group mb-3">
+                {% for loc in top_locations %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ loc.country }}
+                    <span class="badge bg-primary rounded-pill">{{ loc.percentage }}%</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-center p-3 text-muted">
+                <p>No location data available</p>
+            </div>
+            {% endif %}
+        </div>
+        {% if top_locations and top_locations|length > 0 %}
+        <canvas id="topLocationsChart" height="200"></canvas>
+        {% else %}
+        <div class="text-center p-4 text-muted">
+            <i class="fas fa-globe fa-3x mb-2"></i>
+            <p>No location data available for chart</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Top Stories -->
+    <div class="card mb-4 p-3 animate-fade-in" data-delay="700">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">🔥 Top Stories</h5>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#storiesList">
+                Show List
+            </button>
+        </div>
+        <div id="storiesList" class="collapse">
+            {% if top_stories and top_stories|length > 0 %}
+            <ul class="list-group mb-3">
+                {% for s in top_stories %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ s.title }}</h6>
+                            <small class="text-muted">By {{ s.author }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary rounded-pill">{{ s.views }} views</span>
+                            <div class="mt-1"><small>Engagement: {{ s.engagement }}%</small></div>
+                        </div>
+                    </div>
+                    <!-- Delete button added to each story item -->
+                    <div class="mt-2 text-end">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item text-danger delete-btn" href="#" data-id="{{ s.id }}">
+                                        <i class="fas fa-trash me-2"></i> Delete
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-center p-3 text-muted">
+                <p>No story data available</p>
+            </div>
+            {% endif %}
+        </div>
+        {% if top_stories and top_stories|length > 0 %}
+        <canvas id="topStoriesChart" height="200"></canvas>
+        {% else %}
+        <div class="text-center p-4 text-muted">
+            <i class="fas fa-newspaper fa-3x mb-2"></i>
+            <p>No story data available for chart</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Top Authors -->
+    <div class="card mb-4 p-3 animate-fade-in" data-delay="800">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">✍️ Top Authors</h5>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#authorsList">
+                Show List
+            </button>
+        </div>
+        <div id="authorsList" class="collapse">
+            {% if author_performance and author_performance|length > 0 %}
+            <ul class="list-group mb-3">
+                {% for a in author_performance %}
+                <li class="list-group-item">
+                    <div class="d-flex align-items-center">
+                        <!-- Author Profile Image -->
+                        <div class="flex-shrink-0 me-3">
+                            <img src="{{ url_for('static', filename='uploads/' ~ a.profile_pic) }}" alt="{{ a.name }}" 
+                                 class="rounded-circle" width="40" height="40" alt="{{ a.name }}">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ a.name }}</h6>
+                                    <small class="text-muted">{{ a.role or 'Author' }} • {{ a.stories_count }} stories</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-info rounded-pill">{{ a.avg_views|round(2) }} avg views</span>
+                                    <div class="mt-1"><small>Engagement: {{ a.avg_engagement }}%</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-center p-3 text-muted">
+                <p>No author data available</p>
+            </div>
+            {% endif %}
+        </div>
+        {% if author_performance and author_performance|length > 0 %}
+        <canvas id="topAuthorsChart" height="200"></canvas>
+        {% else %}
+        <div class="text-center p-4 text-muted">
+            <i class="fas fa-user-edit fa-3x mb-2"></i>
+            <p>No author data available for chart</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script>
+// Animation on scroll
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate elements on scroll
+    const animatedElements = document.querySelectorAll('.animate-fade-in, .animate-slide-in-left, .animate-slide-in-right');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const delay = entry.target.getAttribute('data-delay') || 0;
+                setTimeout(() => {
+                    entry.target.classList.add('animated');
+                }, delay);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    animatedElements.forEach(el => observer.observe(el));
+    
+    // Count up animation for stats
+    const countUpElements = document.querySelectorAll('.count-up');
+    countUpElements.forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'));
+        const duration = 2000;
+        const steps = 60;
+        const increment = target / steps;
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                el.textContent = target.toLocaleString();
+                clearInterval(timer);
+            } else {
+                el.textContent = Math.round(current).toLocaleString();
+            }
+        }, duration / steps);
+    });
+    
+    // Toggle chart views
+    const contentChartToggle = document.getElementById('contentChartToggle');
+    if (contentChartToggle) {
+        contentChartToggle.addEventListener('click', function() {
+            if (contentChart) {
+                contentChart.config.type = contentChart.config.type === 'doughnut' ? 'pie' : 'doughnut';
+                contentChart.update();
+            }
+        });
+    }
+    
+    const genderChartToggle = document.getElementById('genderChartToggle');
+    if (genderChartToggle) {
+        genderChartToggle.addEventListener('click', function() {
+            if (genderChart) {
+                genderChart.config.type = genderChart.config.type === 'pie' ? 'bar' : 'pie';
+                genderChart.update();
+            }
+        });
+    }
+    
+    // Delete button functionality
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            let storyId = this.getAttribute("data-id");
+
+            if (confirm("Are you sure you want to permanently delete this story?")) {
+                fetch(`/admin/stories/${storyId}/delete`, {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Story deleted successfully.");
+                        location.reload();
+                    } else {
+                        alert("Error: " + (data.error || "Failed to delete story"));
+                    }
+                })
+                .catch(err => alert("Server error: " + err));
+            }
+        });
+    });
+});
+
+// -------- Traffic Overview --------
+// -------- Traffic Overview --------
+fetch("/admin/traffic_data")
+    .then(res => res.json())
+    .then(data => {
+        if (data && data.labels && data.views) {
+            // ✅ Ensure today is included
+            const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+            if (!data.labels.includes(today)) {
+                data.labels.push(today);
+                data.views.push(0);
+                data.likes.push(0);
+                data.comments.push(0);
+            }
+
+            new Chart(document.getElementById("trafficChart"), {
+                type: "bar",
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        { 
+                            label: "Views", 
+                            data: data.views, 
+                            backgroundColor: "#3a7bd5",
+                            borderRadius: 5,
+                            borderSkipped: false
+                        },
+                        { 
+                            label: "Likes", 
+                            data: data.likes, 
+                            backgroundColor: "#38f9d7",
+                            borderRadius: 5,
+                            borderSkipped: false
+                        },
+                        { 
+                            label: "Comments", 
+                            data: data.comments, 
+                            backgroundColor: "#f5576c",
+                            borderRadius: 5,
+                            borderSkipped: false
+                        }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        legend: { position: "top" } 
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        } else {
+            document.getElementById("trafficChart").parentElement.innerHTML = 
+                '<div class="text-center p-4 text-muted"><i class="fas fa-chart-bar fa-3x mb-2"></i><p>No traffic data available</p></div>';
+        }
+    })
+    .catch(error => {
+        console.error("Error loading traffic data:", error);
+        document.getElementById("trafficChart").parentElement.innerHTML = 
+            '<div class="text-center p-4 text-muted"><i class="fas fa-exclamation-triangle fa-3x mb-2"></i><p>Error loading traffic data</p></div>';
+    });
+
+// -------- Content Distribution --------
+{% if content_labels and content_counts and content_labels|length > 0 %}
+const contentChart = new Chart(document.getElementById("contentChart"), {
+    type: "doughnut",
+    data: {
+        labels: {{ content_labels | tojson }},
+        datasets: [{
+            data: {{ content_counts | tojson }},
+            backgroundColor: ["#3a7bd5","#00d2ff","#f5576c","#fdbb2d","#38f9d7"],
+            borderWidth: 0,
+            hoverOffset: 15
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2000,
+            easing: 'easeOutQuart'
+        }
+    }
+});
+{% endif %}
+
+// -------- Gender Distribution --------
+{% if gender_labels and gender_counts and gender_labels|length > 0 %}
+const genderChart = new Chart(document.getElementById("genderChart"), {
+    type: "pie",
+    data: {
+        labels: {{ gender_labels | tojson }},
+        datasets: [{
+            data: {{ gender_counts | tojson }},
+            backgroundColor: ["#3a7bd5","#f5576c","#fdbb2d"],
+            borderWidth: 0,
+            hoverOffset: 15
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2000,
+            easing: 'easeOutQuart'
+        }
+    }
+});
+{% endif %}
+
+// -------- Top Locations --------
+fetch("/admin/top_locations_data")
+.then(res => res.json())
+.then(data => {
+    if (data && data.labels && data.data) {
+        new Chart(document.getElementById("topLocationsChart"), {
+            type: "bar",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Users",
+                    data: data.data,
+                    backgroundColor: "#3a7bd5",
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { 
+                        display: false 
+                    } 
+                },
+                indexAxis: 'y',
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+})
+.catch(error => {
+    console.error("Error loading location data:", error);
+});
+
+// -------- Top Stories --------
+fetch("/admin/top_stories_data")
+.then(res => res.json())
+.then(data => {
+    if (data && data.labels && data.data) {
+        new Chart(document.getElementById("topStoriesChart"), {
+            type: "bar",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Views",
+                    data: data.data,
+                    backgroundColor: "#f5576c",
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                plugins: { 
+                    legend: { 
+                        display: false 
+                    } 
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+})
+.catch(error => {
+    console.error("Error loading stories data:", error);
+});
+
+// -------- Top Authors --------
+fetch("/admin/top_authors_data")
+.then(res => res.json())
+.then(data => {
+    if (data && data.labels && data.data) {
+        new Chart(document.getElementById("topAuthorsChart"), {
+            type: "bar",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Avg Views",
+                    data: data.data,
+                    backgroundColor: "#00d2ff",
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let i = context.dataIndex;
+                                return data.labels[i] + " — " + data.data[i] + " views";
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+})
+.catch(error => {
+    console.error("Error loading authors data:", error);
+});
+</script>
+
+<style>
+/* Animation classes */
+.animate-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-slide-in-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-fade-in.animated,
+.animate-slide-in-left.animated,
+.animate-slide-in-right.animated {
+    opacity: 1;
+    transform: translate(0);
+}
+
+/* Stats card hover effects */
+.stats-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.stats-icon {
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.stats-card:hover .stats-icon {
+    opacity: 1;
+}
+
+/* Custom scrollbar for lists */
+.list-group {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.list-group::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.list-group::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Chart container styling */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f0f0f0;
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+}
+
+/* Progress bar animation */
+.progress-bar {
+    transition: width 1.5s ease-in-out;
+}
+
+/* Badge animation */
+.badge {
+    transition: transform 0.2s;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+/* Author profile image styling */
+.flex-shrink-0 img {
+    object-fit: cover;
+}
+</style>
+{% endblock %}

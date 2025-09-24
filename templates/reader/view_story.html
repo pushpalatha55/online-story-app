@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="card mb-4">
+    {% if story.featured_image %}
+      <img src="{{ url_for('static', filename=story.featured_image) }}" 
+           class="card-img-top" 
+           style="width:100%; height:300px; object-fit:contain; background-color:#f8f9fa;">
+    {% endif %}
+    <div class="card-body">
+      <h2>{{ story.title }}</h2>
+      <p class="text-muted">By {{ story.author_name }} • {{ story.created_at.strftime('%b %d, %Y') }}</p>
+      <p>{{ story.content }}</p>
+
+      <div class="d-flex gap-2 mt-3">
+        <button id="likeBtn" class="btn btn-outline-danger" {% if already_liked %}disabled{% endif %}>
+          <i class="fas fa-heart"></i> Like <span id="likesCount">({{ story.likes }})</span>
+        </button>
+
+        <button id="shareBtn" class="btn btn-outline-success">
+          <i class="fas fa-share"></i> Share <span id="shareCount">({{ story.shares }})</span>
+        </button>
+
+        <span class="btn btn-outline-secondary">👀 Views: <span id="viewsCount">{{ story.views }}</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments -->
+  <div class="card">
+    <div class="card-header">Comments ({{ story.comments }})</div>
+    <div class="card-body">
+      <form id="commentForm" method="POST" action="{{ url_for('author.comment_story', story_id=story.id) }}">
+        <textarea name="content" class="form-control mb-2" placeholder="Write a comment..." required></textarea>
+        <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+      </form>
+      <hr>
+      {% for c in comments %}
+      <div class="mb-3">
+        <strong>{{ c.username }}</strong> <small class="text-muted">{{ c.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+        <p>{{ c.content }}</p>
+      </div>
+      {% else %}
+      <p class="text-muted">No comments yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const storyId = {{ story.id }};
+
+  // Track detailed view
+  fetch(`/author/story1/${storyId}/track_view`, { method: 'POST', headers: {'Accept':'application/json'} })
+    .then(r => r.json()).then(json => {
+      if (!json.success) {
+        console.warn('track_view:', json.error);
+      }
+    }).catch(err => console.warn('track_view failed', err));
+
+  // Like
+  const likeBtn = document.getElementById('likeBtn');
+  if (likeBtn) {
+    likeBtn.addEventListener('click', function(e) {
+      fetch(`/author/story1/${storyId}/like`, { method: 'POST', headers: {'Accept':'application/json'} })
+        .then(r => r.json()).then(json => {
+          if (json.success) {
+            const c = document.getElementById('likesCount');
+            c.innerText = '(' + (parseInt(c.innerText.replace(/\D/g,'')) + 1) + ')';
+            likeBtn.disabled = true;
+          } else {
+            alert(json.error || 'Could not like');
+          }
+        }).catch(err => { console.error(err); alert('Error liking story'); });
+    });
+  }
+
+  // Share
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function(e) {
+      fetch(`/author/story1/${storyId}/share`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({platform: 'other'})
+      }).then(r => r.json()).then(json => {
+        if (json.success) {
+          const c = document.getElementById('shareCount');
+          c.innerText = '(' + (parseInt(c.innerText.replace(/\D/g,'')) + 1) + ')';
+        } else {
+          alert(json.error || 'Could not share');
+        }
+      }).catch(err => { console.error(err); alert('Error sharing story'); });
+    });
+  }
+});
+</script>
+{% endblock %}

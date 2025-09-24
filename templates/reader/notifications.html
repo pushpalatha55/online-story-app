@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}My Notifications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">My Notifications</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            {% if 'upgraded to Author' in message or 'approved' in message %}
+              <a href="{{ url_for('author.author_dashboard') }}" class="btn btn-sm btn-primary ms-2">Go to Author Dashboard</a>
+            {% endif %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Switch to Author Request -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Want to become an Author?</h5>
+            <p class="card-text">
+                By switching to an Author account, you can create and publish your own stories.
+            </p>
+            <form method="post" action="{{ url_for('reader.request_author_role') }}">
+                <button type="submit" class="btn btn-primary">Request Author Access</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Notifications</h5>
+            {% if notifications %}
+                <ul class="list-group">
+                    {% for note in notifications %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ note.type|capitalize }}</strong> - {{ note.message }}
+                                <br>
+                                <small class="text-muted">{{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge 
+                                    {% if note.status == 'pending' %} bg-warning
+                                    {% elif note.status == 'approved' %} bg-success
+                                    {% else %} bg-danger {% endif %}">
+                                    {{ note.status|capitalize }}
+                                </span>
+                                {% if note.status == 'approved' %}
+                                    <a href="{{ url_for('author.author_dashboard') }}" class="btn btn-sm btn-primary ms-3">
+                                        Go to Author Dashboard
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No notifications yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

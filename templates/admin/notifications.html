@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Admin Notifications{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Admin Notifications Dashboard</h2>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs mb-4" id="notificationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="author-requests-tab" data-bs-toggle="tab" data-bs-target="#author-requests" type="button" role="tab">
+                Author Requests <span class="badge bg-danger ms-1">{{ author_notifications|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="author-messages-tab" data-bs-toggle="tab" data-bs-target="#author-messages" type="button" role="tab">
+                Author Messages <span class="badge bg-info ms-1">{{ author_messages|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reader-notifications-tab" data-bs-toggle="tab" data-bs-target="#reader-notifications" type="button" role="tab">
+                Reader Notifications <span class="badge bg-secondary ms-1">{{ reader_notifications|length }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="notificationTabsContent">
+        <!-- Author Requests Tab -->
+        <div class="tab-pane fade show active" id="author-requests" role="tabpanel">
+            {% if author_notifications %}
+            <div class="row g-4" id="authorRequestsContainer">
+                {% for note in author_notifications %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card notification-card h-100 animate__animated animate__fadeIn" data-id="{{ note.id }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    {{ note.username[0]|upper }}
+                                </div>
+                                <strong>{{ note.username }}</strong>
+                            </div>
+                            <span class="badge bg-{{ 'warning' if note.status == 'pending' else 'success' if note.status == 'approved' else 'danger' }}">{{ note.status|capitalize }}</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ note.message }}</p>
+                            <small class="text-muted">Requested: {{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        {% if note.status == 'pending' %}
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{{ url_for('admin.approve_notification', note_id=note.id) }}" class="flex-fill">
+                                    <button class="btn btn-success w-100">
+                                        <i class="fas fa-check me-1"></i> Approve
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ url_for('admin.reject_notification', note_id=note.id) }}" class="flex-fill">
+                                    <button class="btn btn-danger w-100">
+                                        <i class="fas fa-times me-1"></i> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Role Requests</h4>
+                    <p class="text-muted">There are no pending author role requests at this time.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Author Messages Tab -->
+        <div class="tab-pane fade" id="author-messages" role="tabpanel">
+            {% if author_messages %}
+            <div class="accordion" id="authorMessagesAccordion">
+                {% for note in author_messages %}
+                <div class="accordion-item animate__animated animate__fadeIn">
+                    <h2 class="accordion-header" id="heading{{ note.id }}">
+                        <button class="accordion-button {{ 'collapsed' if loop.index0 != 0 }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ note.id }}" aria-expanded="{{ 'true' if loop.index0 == 0 else 'false' }}" aria-controls="collapse{{ note.id }}">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                    {{ note.username[0]|upper }}
+                                </div>
+                                <div>
+                                    <strong>{{ note.username }}</strong>
+                                    <span class="badge bg-{{ 'primary' if note.status == 'pending' else 'success' if note.status == 'replied' else 'secondary' }} ms-2">{{ note.status|capitalize }}</span>
+                                    <div class="small text-muted">{{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ note.id }}" class="accordion-collapse collapse {{ 'show' if loop.index0 == 0 }}" aria-labelledby="heading{{ note.id }}" data-bs-parent="#authorMessagesAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-3">
+                                <strong>Message:</strong>
+                                <p class="mt-2 p-3 bg-light rounded">{{ note.message }}</p>
+                            </div>
+                            <form action="{{ url_for('admin.reply_to_author', note_id=note.id) }}" method="POST">
+                                <div class="mb-3">
+                                    <label for="reply{{ note.id }}" class="form-label">Reply to {{ note.username }}</label>
+                                    <textarea class="form-control" id="reply{{ note.id }}" name="reply_message" rows="3" placeholder="Type your reply here..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i> Send Reply
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="py-5">
+                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Messages</h4>
+                    <p class="text-muted">There are no messages from authors at this time.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Reader Notifications Tab -->
+        <div class="tab-pane fade" id="reader-notifications" role="tabpanel">
+            {% if reader_notifications %}
+            <div class="list-group" id="readerNotificationsList">
+                {% for note in reader_notifications %}
+                <div class="list-group-item list-group-item-action animate__animated animate__fadeIn">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div class="d-flex align-items-center mb-1">
+                            <div class="avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                {{ note.username[0]|upper }}
+                            </div>
+                            <h5 class="mb-0">{{ note.username }}</h5>
+                        </div>
+                        <small class="text-muted">{{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p class="mb-1 mt-2">{{ note.message }}</p>
+                    <div class="d-flex justify-content-end">
+                        <span class="badge bg-{{ 'info' if note.status == 'new' else 'success' if note.status == 'viewed' else 'secondary' }}">{{ note.status|capitalize }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="py-5">
+                    <i class="fas fa-bell fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Reader Notifications</h4>
+                    <p class="text-muted">There are no reader notifications at this time.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh button functionality
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+        const refreshIcon = this.querySelector('i');
+        refreshIcon.classList.add('fa-spin');
+        setTimeout(() => {
+            refreshIcon.classList.remove('fa-spin');
+            location.reload();
+        }, 800);
+    });
+
+    // Tab change event - update URL hash
+    const notificationTabs = document.getElementById('notificationTabs');
+    const bsTabs = new bootstrap.Tab(notificationTabs);
+    
+    notificationTabs.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-bs-target')) {
+            const target = e.target.getAttribute('data-bs-target');
+            window.location.hash = target;
+        }
+    });
+
+    // Check URL hash on load
+    if (window.location.hash) {
+        const triggerEl = document.querySelector(`[data-bs-target="${window.location.hash}"]`);
+        if (triggerEl) {
+            bootstrap.Tab.getInstance(triggerEl).show();
+        }
+    }
+
+    // Add hover effects to notification cards
+    const cards = document.querySelectorAll('.notification-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.classList.add('shadow-sm');
+        });
+        card.addEventListener('mouseleave', () => {
+            card.classList.remove('shadow-sm');
+        });
+    });
+});
+</script>
+
+<style>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-weight: 600;
+}
+
+.notification-card {
+    transition: all 0.3s ease;
+}
+
+.notification-card:hover {
+    transform: translateY(-5px);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.list-group-item {
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.7rem;
+}
+
+.nav-tabs .nav-link {
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+}
+</style>
+{% endblock %}

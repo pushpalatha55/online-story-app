@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryHub - Discover Amazing Stories</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --primary-dark: #3a5ccc;
+            --secondary-color: #f8f9fc;
+            --accent-color: #e74a3b;
+            --text-color: #5a5c69;
+            --light-bg: #f8f9fc;
+            --dark-bg: #2e3a59;
+            --gradient-start: rgba(78,115,223,0.95);
+            --gradient-end: rgba(58,92,204,0.9);
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            padding-top: 80px;
+            overflow-x: hidden;
+        }
+        
+        /* Enhanced Navbar */
+        .custom-navbar {
+          background:black;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: all 0.3s ease;
+          font-family: 'Times New Roman', Times, serif;
+        }
+
+        .custom-navbar .navbar-brand {
+          font-size: 1.4rem;
+          color: white;
+          text-decoration: none;
+        }
+
+        .custom-navbar .nav-link {
+          font-weight: 500;
+          color: #333;
+          margin: 0 8px;
+          position: relative;
+          transition: all 0.3s ease;
+        }
+
+        .custom-navbar .nav-link:hover,
+        .custom-navbar .nav-link.active {
+          color: #6a11cb;
+        }
+
+        .custom-navbar .nav-link::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -4px;
+          width: 0%;
+          height: 2px;
+          background: linear-gradient(90deg, #6a11cb, #ff4b2b);
+          transition: width 0.3s ease;
+        }
+
+        .custom-navbar .nav-link:hover::after,
+        .custom-navbar .nav-link.active::after {
+          width: 100%;
+        }
+
+        .navbar-toggler {
+          border: none;
+        }
+        .navbar-toggler:focus {
+          box-shadow: none;
+        }
+        
+        /* Enhanced Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)), 
+                        url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            padding: 120px 0;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to top, var(--light-bg), transparent);
+            z-index: 1;
+        }
+        
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 35px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-section form {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-section .form-control {
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .hero-section .btn {
+            border-radius: 50px;
+            padding: 0.8rem 1.8rem;
+            margin-left: 10px;
+            background: white;
+            color: var(--primary-color);
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .hero-section .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Search and Filter Section */
+        .search-filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        /* Compact Story Cards */
+        .stories-container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .story-card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            height: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .story-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+        }
+        
+        .story-card img {
+            height: 180px;
+            object-fit: cover;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+        
+        .story-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        .card-body {
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.3;
+        }
+        
+        .card-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        
+        .story-excerpt {
+            margin-bottom: 1rem;
+            min-height: 60px;
+            flex-grow: 1;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            margin-top: 10px;
+            width:40%;
+            padding: 0.3em 0.8em;
+            font-size: 0.7em;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            border-radius: 20px;
+            margin-bottom: 0.8rem;
+            margin-left: 5px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(223, 209, 78, 0.3);
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            margin-top: auto;
+            font-size: 0.85rem;
+        }
+        
+        .author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .story-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            color: #6c757d;
+        }
+        
+        .read-more-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border-radius: 20px;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 3px 10px rgba(78,115,223,0.3);
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            margin-top: auto;
+        }
+        
+        .read-more-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.6s ease;
+        }
+        
+        .read-more-btn:hover::before {
+            left: 100%;
+        }
+        
+        .read-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78,115,223,0.4);
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(45deg, var(--accent-color), #c03529);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 20px;
+            z-index: 10;
+            box-shadow: 0 3px 8px rgba(231,74,59,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Enhanced Footer */
+        .site-footer {
+          background: #2d3333;
+          color: #fff;
+          padding: 60px 40px 30px;
+          font-family: 'Times New Roman', Times, serif;
+        }
+
+        .footer-container {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 2fr;
+          gap: 40px;
+          max-width: 1200px;
+          margin: auto;
+        }
+
+        .footer-about h2 {
+          font-size: 1.8rem;
+          margin-bottom: 15px;
+        }
+
+        .footer-about p {
+          color: #ccc;
+          line-height: 1.6;
+          margin-bottom: 20px;
+        }
+
+        .footer-social a {
+          display: inline-block;
+          width: 40px;
+          height: 40px;
+          line-height: 40px;
+          text-align: center;
+          background: #444;
+          color: #fff;
+          border-radius: 50%;
+          margin-right: 10px;
+          transition: 0.3s;
+        }
+        .footer-social a:hover {
+          background: #6a11cb;
+        }
+
+        .footer-links,
+        .footer-newsletter {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .footer-links h3,
+        .footer-newsletter h3 {
+          font-size: 1.2rem;
+          margin-bottom: 0px;
+          font-weight: bold;
+          color: #fff;
+        }
+
+        .footer-links ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .footer-links ul li {
+          margin-bottom: 10px;
+        }
+
+        .footer-links ul li a {
+          color: #bbb;
+          text-decoration: none;
+          transition: 0.3s;
+        }
+        .footer-links ul li a:hover {
+          color: #fff;
+        }
+
+        .footer-newsletter p {
+          color: #ccc;
+          margin-bottom: 15px;
+          line-height: 1.5;
+        }
+
+        .footer-newsletter form {
+          display: flex;
+          border-radius: 25px;
+          overflow: hidden;
+          width: 100%;
+          max-width: 350px;
+        }
+
+        .footer-newsletter input {
+          flex: 1;
+          padding: 12px 15px;
+          border: none;
+          outline: none;
+          font-size: 0.95rem;
+        }
+
+        .footer-newsletter button {
+          background: #0d0630;
+          color: #fff;
+          padding: 12px 25px;
+          border: none;
+          cursor: pointer;
+          font-weight: bold;
+          transition: 0.3s;
+        }
+        .footer-newsletter button:hover {
+          background: #6a11cb;
+        }
+
+        .footer-bottom {
+          border-top: 1px solid #444;
+          margin-top: 30px;
+          padding-top: 20px;
+          display: flex;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          color: #aaa;
+          font-size: 0.9rem;
+        }
+
+        .footer-bottom a {
+          color: #aaa;
+          text-decoration: none;
+          margin-left: 10px;
+        }
+        .footer-bottom a:hover {
+          color: #fff;
+        }
+
+        .back-to-top {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          background: #0d0630;
+          color: #fff;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          text-align: center;
+          line-height: 50px;
+          font-size: 20px;
+          transition: 0.3s;
+          cursor: pointer;
+        }
+        .back-to-top:hover {
+          background: #6a11cb;
+        }
+
+        @media (max-width: 768px) {
+          .footer-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+          }
+        }
+        
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            border-radius: 50px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .pagination li {
+            margin: 0 5px;
+        }
+        
+        .pagination a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination a:hover,
+        .pagination a.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 10px rgba(78,115,223,0.3);
+        }
+        
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #eee;
+            padding: 1.2rem 1.5rem;
+        }
+        
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #eee;
+            padding: 1rem 1.5rem;
+        }
+        
+        .modal-image {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        /* Animations */
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .hero-section .btn {
+                margin-top: 15px;
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .author-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .author-avatar {
+                margin-bottom: 8px;
+            }
+            
+            .pagination a {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Search and Filter Section */
+        .search-filter-section {
+            margin-bottom: 30px;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, 
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px 0;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg custom-navbar fixed-top">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('auth.index') }}">
+          <svg viewBox="0 0 100 100" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <rect x="10" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(-15 17.5 50)" />
+            <rect x="35" y="15" width="15" height="70" fill="url(#grad1)" />
+            <rect x="60" y="25" width="15" height="50" fill="url(#grad1)" transform="rotate(15 67.5 50)" />
+          </svg>
+          <span class="ms-2 fw-bold">STORY <font color="orange">TIME</font></span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.index') }}" style="color: white;">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.about') }}" style="color: white;">About</a></li>
+            <li class="nav-item"><a class="nav-link active" href="{{ url_for('auth.all_stories') }}" style="color: white;">All Stories</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.contact') }}" style="color: white;">Contact</a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('auth.login') }}" 
+                    style="color: black; background-color: white; 
+                            padding: 8px 20px; border-radius: 6px; 
+                            font-weight: 500; margin-right: 10px;
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.15); 
+                            transition: all 0.3s ease;"
+                    onmouseover="this.style.backgroundColor='white'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.25)';"
+                    onmouseout="this.style.backgroundColor='white'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.15)';">
+                    Login
+                </a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.register') }}" 
+                style="color: #fff; background-color:blue; 
+                        padding: 8px 20px; border-radius: 6px; 
+                        font-weight: 500;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.15); 
+                        transition: all 0.3s ease;"
+                onmouseover="this.style.backgroundColor='blue'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.25)';"
+                onmouseout="this.style.backgroundColor='blue'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.15)';">
+                Register
+            </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="hero-title animate_animated animate_fadeInDown">Discover Stories That Inspire</h1>
+            <p class="hero-subtitle animate_animated animatefadeIn animate_delay-1s">Explore captivating tales from talented authors around the world</p>
+            <form class="d-flex justify-content-center animate_animated animatefadeInUp animate_delay-1s" id="searchForm">
+                <input type="text" class="form-control me-2" id="searchInput" placeholder="Search stories by title, author, or category...">
+                <button type="submit" class="btn btn-light">Search</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Search and Filter Section -->
+    <div class="container">
+        <div class="search-filter-section">
+            <h4>Filter Stories</h4>
+            <div class="filter-options">
+                <button class="filter-btn active" data-filter="all">All Stories</button>
+                <button class="filter-btn" data-filter="featured">Featured</button>
+                <button class="filter-btn" data-filter="popular">Most Popular</button>
+                <button class="filter-btn" data-filter="recent">Recent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stories Grid -->
+    <div class="container stories-container">
+        <div class="row" id="stories-grid">
+            {% if stories %}
+                {% for story in stories %}
+                    <div class="col-lg-4 col-md-6 mb-4 story-item" 
+                         data-title="{{ story.title|lower }}" 
+                         data-author="{{ story.author_name|lower }}" 
+                         data-category="{{ story.category|lower if story.category else 'uncategorized' }}"
+                         data-featured="{{ 'true' if loop.index0 == 0 else 'false' }}"
+                         data-views="{{ story.views }}"
+                         data-date="{{ story.publish_date }}">
+                        <div class="card story-card h-100">
+                            {% if loop.index0 == 0 %}
+                                <div class="featured-badge">Featured</div>
+                            {% endif %}
+                            
+                            {% if story.featured_image %}
+                                <img src="{{ url_for('static', filename=story.featured_image) }}" class="card-img-top story-image" alt="{{ story.title }}" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ url_for('static', filename=story.featured_image) }}" data-title="{{ story.title }}">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="card-img-top story-image" alt="Default story image" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" data-title="{{ story.title }}">
+                            {% endif %}
+                            
+                            <div class="category-badge">
+                                {{ story.category if story.category else 'Uncategorized' }}
+                            </div>
+                            
+                            <div class="card-body">
+                                <h5 class="card-title">{{ story.title }}</h5>
+                                <p class="card-text story-excerpt">
+                                    {{ story.content|striptags|truncate(120) }}
+                                </p>
+                                
+                                <div class="author-info">
+                                    <img src="{{ url_for('static', filename='uploads/' ~ story.author_profile_pic) }}" 
+                                        class="profile-img me-2" 
+                                        alt="{{ story.author_name }}" style="width:50px;height:50px;border-radius: 30px;">
+                                    <span><font color="blue">By {{ story.author_name }}</font></span>
+                                </div>
+                                
+                                <div class="story-stats">
+                                    <span><i class="far fa-eye me-1"></i> {{ story.views }} views</span>
+                                    <span><i class="far fa-clock me-1"></i> {{ story.publish_date|datetimeformat('%b %d, %Y') }}</span>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <a href="{{ url_for('author.view_story', story_id=story.id) if session.get('user_role') == 'author' else '#' }}" class="btn read-more-btn read-more-link" data-story-id="{{ story.id }}">
+                                        Read More <i class="fas fa-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-book fa-3x text-muted mb-3 animate-float"></i>
+                    <h3>No stories published yet</h3>
+                    <p class="text-muted">Check back later for inspiring content from our authors.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- No Results Message (Initially Hidden) -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-search fa-3x mb-3"></i>
+            <h4>No stories found</h4>
+            <p>Try different search terms or filters</p>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <ul class="pagination" id="pagination">
+                <!-- Pagination will be generated by JavaScript -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Story Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="" class="modal-image img-fluid" id="modalImage" alt="Story image">
+                    <h4 id="modalImageTitle" class="mt-3"></h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        
+        <!-- About Section -->
+        <div class="footer-about">
+          <h2 style="color: white;">STORY TIME</h2>
+          <p>Where stories come to life and imaginations soar. Join our community of storytellers and readers today.</p>
+          
+          <div class="footer-social">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div class="footer-links">   
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="{{ url_for('auth.index') }}">Home</a></li>
+            <li><a href="{{ url_for('auth.about') }}">About</a></li>
+            <li><a href="{{ url_for('auth.all_stories') }}">Stories</a></li>
+            <li><a href="{{ url_for('auth.contact') }}">Contact</a></li>
+          </ul>
+        </div>
+        
+        <!-- Resources -->
+        <div class="footer-links">
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Writing Tips</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </div>
+        
+        <!-- Newsletter -->
+        <div class="footer-newsletter">
+          <h3>Newsletter</h3>
+          <p>Subscribe to get updates on new stories, features, and writing contests.</p>
+          <form>
+            <input type="email" placeholder="Your email">
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+        
+      </div>
+      
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <p>© 2023 StoryCraft. All rights reserved.</p>
+        <p><a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a></p>
+      </div>
+      
+      <!-- Back to Top Button -->
+      <a href="#" class="back-to-top">↑</a>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate story cards on scroll
+            const storyCards = document.querySelectorAll('.story-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate_animated', 'animate_fadeInUp');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            storyCards.forEach(card => {
+                observer.observe(card);
+            });
+            
+            // Initialize pagination
+            initPagination();
+            
+            // Initialize image modal
+            initImageModal();
+            
+            // Initialize read more functionality
+            initReadMore();
+            
+            // Initialize search functionality
+            initSearch();
+            
+            // Initialize filter functionality
+            initFilters();
+        });
+        
+        // Search functionality
+        function initSearch() {
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const storyItems = document.querySelectorAll('.story-item');
+            const noResults = document.getElementById('noResults');
+            
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                filterStories();
+            });
+            
+            searchInput.addEventListener('input', function() {
+                filterStories();
+            });
+            
+            function filterStories() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleItems = 0;
+                
+                storyItems.forEach(item => {
+                    const title = item.getAttribute('data-title');
+                    const author = item.getAttribute('data-author');
+                    const category = item.getAttribute('data-category');
+                    
+                    if (searchTerm === '' || 
+                        title.includes(searchTerm) || 
+                        author.includes(searchTerm) || 
+                        category.includes(searchTerm)) {
+                        item.style.display = 'block';
+                        visibleItems++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide no results message
+                if (visibleItems === 0 && searchTerm !== '') {
+                    noResults.style.display = 'block';
+                    document.querySelector('.pagination-container').style.display = 'none';
+                } else {
+                    noResults.style.display = 'none';
+                    document.querySelector('.pagination-container').style.display = 'flex';
+                }
+                
+                // Update pagination
+                initPagination();
+            }
+        }
+        
+        // Filter functionality
+        function initFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const storyItems = document.querySelectorAll('.story-item');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.getAttribute('data-filter');
+                    filterStoriesByType(filter);
+                });
+            });
+            
+            function filterStoriesByType(filter) {
+                storyItems.forEach(item => {
+                    switch(filter) {
+                        case 'all':
+                            item.style.display = 'block';
+                            break;
+                        case 'featured':
+                            if (item.getAttribute('data-featured') === 'true') {
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                            break;
+                        case 'popular':
+                            const views = parseInt(item.getAttribute('data-views'));
+                            if (views >= 100) { // Adjust threshold as needed
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                            break;
+                        case 'recent':
+                            // This would need actual date comparison in a real app
+                            // For demo, we'll just show all
+                            item.style.display = 'block';
+                            break;
+                    }
+                });
+                
+                // Update pagination
+                initPagination();
+            }
+        }
+        
+        // Pagination functionality
+        function initPagination() {
+            const storiesPerPage = 6;
+            const storyItems = Array.from(document.querySelectorAll('.story-item')).filter(item => 
+                window.getComputedStyle(item).display !== 'none'
+            );
+            const totalStories = storyItems.length;
+            const totalPages = Math.ceil(totalStories / storiesPerPage);
+            const paginationElement = document.getElementById('pagination');
+            
+            // If no stories or only one page, hide pagination
+            if (totalPages <= 1) {
+                document.querySelector('.pagination-container').style.display = 'none';
+                // Show all stories if only one page
+                storyItems.forEach(item => item.style.display = 'block');
+                return;
+            } else {
+                document.querySelector('.pagination-container').style.display = 'flex';
+            }
+            
+            // Create pagination buttons
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += '<li><a href="#" class="page-nav" data-page="prev">&laquo;</a></li>';
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<li><a href="#" class="page-nav ${i === 1 ? 'active' : ''}" data-page="${i}">${i}</a></li>`;
+            }
+            
+            // Next button
+            paginationHTML += '<li><a href="#" class="page-nav" data-page="next">&raquo;</a></li>';
+            
+            paginationElement.innerHTML = paginationHTML;
+            
+            // Show first page by default
+            showPage(1);
+            
+            // Add event listeners to pagination buttons
+            document.querySelectorAll('.page-nav').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const currentPage = parseInt(document.querySelector('.page-nav.active').dataset.page);
+                    let newPage;
+                    
+                    if (this.dataset.page === 'prev') {
+                        newPage = currentPage - 1;
+                    } else if (this.dataset.page === 'next') {
+                        newPage = currentPage + 1;
+                    } else {
+                        newPage = parseInt(this.dataset.page);
+                    }
+                    
+                    // Validate page number
+                    if (newPage < 1) newPage = 1;
+                    if (newPage > totalPages) newPage = totalPages;
+                    
+                    showPage(newPage);
+                    
+                    // Update active class
+                    document.querySelectorAll('.page-nav').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    document.querySelector(`.page-nav[data-page="${newPage}"]`).classList.add('active');
+                    
+                    // Scroll to top of stories
+                    window.scrollTo({
+                        top: document.querySelector('.stories-container').offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            function showPage(page) {
+                const startIndex = (page - 1) * storiesPerPage;
+                const endIndex = startIndex + storiesPerPage;
+                
+                // First hide all stories
+                storyItems.forEach(item => {
+                    item.style.display = 'none';
+                });
+                
+                // Then show only the ones for this page
+                storyItems.forEach((item, index) => {
+                    if (index >= startIndex && index < endIndex) {
+                        item.style.display = 'block';
+                    }
+                });
+            }
+        }
+        
+        // Image modal functionality
+        function initImageModal() {
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalImageTitle = document.getElementById('modalImageTitle');
+            
+            imageModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const imageUrl = button.getAttribute('data-image');
+                const title = button.getAttribute('data-title');
+                
+                modalImage.src = imageUrl;
+                modalImageTitle.textContent = title;
+            });
+        }
+        
+        // Read more functionality
+        function initReadMore() {
+            document.querySelectorAll('.read-more-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // If user is not logged in, show login modal
+                    if (this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                        
+                        // Create and show a modal prompting login
+                        const loginModalHTML = `
+                            <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-labelledby="loginPromptModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="loginPromptModalLabel">Login Required</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>You need to be logged in to read this story. Please login or register to continue.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+                                            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">Register</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add modal to body if not already there
+                        if (!document.getElementById('loginPromptModal')) {
+                            document.body.insertAdjacentHTML('beforeend', loginModalHTML);
+                        }
+                        
+                        // Show the modal
+                        const loginModal = new bootstrap.Modal(document.getElementById('loginPromptModal'));
+                        loginModal.show();
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
